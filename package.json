@@ -1,0 +1,49 @@
+{
+  "name": "@oleg_svetlichnyi/expo-icloud-storage",
+  "version": "0.1.2",
+  "description": "Expo module for working with iCloud",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "expo-module": "expo-module"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "expo-icloud-storage",
+    "ExpoIcloudStorage"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/o-svetlichnyi/expo-icloud-storage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/o-svetlichnyi/expo-icloud-storage/issues"
+  },
+  "author": "Oleg Svetlichnyi (https://github.com/o-svetlichnyi)",
+  "license": "MIT",
+  "homepage": "https://github.com/o-svetlichnyi/expo-icloud-storage#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/react": "^18.0.25",
+    "@types/react-native": "^0.70.6",
+    "expo-module-scripts": "^3.0.4",
+    "expo-modules-core": "^1.1.0"
+  },
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": "./expo-icloud-storage"
+    }
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}
