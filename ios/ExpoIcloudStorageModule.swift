@@ -57,11 +57,13 @@ public class ExpoIcloudStorageModule: Module {
         do {
             query.start()
             query.enableUpdates()
-            let newFileName = "temporary"
+            let newFileName = UUID().uuidString // Generates a unique file name
             let fileDirectory = fileURL.deletingLastPathComponent()
             let temporaryFileURL = fileDirectory.appendingPathComponent(newFileName)
+
             try fileManager.copyItem(at: fileURL, to: temporaryFileURL)
             try fileManager.setUbiquitous(true, itemAt: temporaryFileURL, destinationURL: destinationURL)
+            try fileManager.removeItem(at: temporaryFileURL)
         } catch {
             print("Error starting upload: \(error)")
         }
@@ -365,9 +367,9 @@ public class ExpoIcloudStorageModule: Module {
             var results: [Result<String, Error>] = []
             var totalSize: Int64 = 0
             let fileManager = FileManager.default
-            
+
             let dispatchGroup = DispatchGroup()
-            
+
             for filePath in filePaths {
                 dispatchGroup.enter()
                 let filePathWithoutPrefix = filePath.replacingOccurrences(of: "file://", with: "")
@@ -391,11 +393,11 @@ public class ExpoIcloudStorageModule: Module {
                     let filePathWithoutPrefix = filePath.replacingOccurrences(of: "file://", with: "")
                     let fileURL = URL(fileURLWithPath: filePathWithoutPrefix)
                     let destinationPath = destinationDirectory + "/" + fileURL.lastPathComponent
-                    
+
                     self.uploadFile(destinationPath: destinationPath, filePath: filePath, documentsURL: documentsURL, progressCallback: { progress, fileSize, _ in
                         if totalSize != 0 {
                             let relativeToTotalProgress = Int(Double(fileSize) / Double(totalSize) * progress)
-                            
+
                             let overallProgress = Double(relativeToTotalProgress + uploadedProgress).rounded()
                             self.sendEvent("onUploadFilesAsyncProgress", ["value": overallProgress])
                             if progress == 100 {
@@ -405,7 +407,7 @@ public class ExpoIcloudStorageModule: Module {
                     }, completionHandler: { result in
                         filesProcessed += 1
                         results.append(result)
-                        
+
                         if filesProcessed == totalFiles {
                             promise.resolve(results.map { result -> [String: Any] in
                                 switch result {
