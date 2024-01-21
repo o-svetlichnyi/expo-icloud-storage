@@ -63,7 +63,6 @@ public class ExpoIcloudStorageModule: Module {
 
             try fileManager.copyItem(at: fileURL, to: temporaryFileURL)
             try fileManager.setUbiquitous(true, itemAt: temporaryFileURL, destinationURL: destinationURL)
-            try fileManager.removeItem(at: temporaryFileURL)
         } catch {
             print("Error starting upload: \(error)")
         }
