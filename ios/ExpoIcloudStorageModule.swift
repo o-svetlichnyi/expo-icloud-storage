@@ -302,19 +302,19 @@ public class ExpoIcloudStorageModule: Module {
                         self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
                     }
                     for path in paths {
-                        downloadFile(path: path, destinationDir: destinationDir, progressCallback: { progress, fileSize, fileName in
-                            if totalFilesSize != 0 {
-                                if downloadProgressMap[fileName] != nil {
-                                    let relativeToTotalProgress = Int(Double(fileSize) / Double(totalFilesSize) * progress)
+                       downloadFile(path: path, destinationDir: destinationDir, progressCallback: { progress, fileSize, fileName in
+                           if totalFilesSize != 0 {
+                               if let previousProgress = downloadProgressMap[fileName] {
+                                   let relativeToTotalProgress = Int(Double(fileSize) / Double(totalFilesSize) * Double(progress))
+                                   let deltaProgress = relativeToTotalProgress - previousProgress
+                                   downloadedProgress += deltaProgress
+                                   downloadProgressMap[fileName] = relativeToTotalProgress
 
-                                    let overallProgress = Double(relativeToTotalProgress + downloadedProgress).rounded()
-                                    self.sendEvent("onDownloadFilesAsyncProgress", ["value": overallProgress])
-                                    if progress == 100 {
-                                        downloadedProgress += relativeToTotalProgress
-                                    }
-                                }
-                            }
-                        }, completionHandler: { result in
+                                   let overallProgress = Double(downloadedProgress).rounded()
+                                   self.sendEvent("onDownloadFilesAsyncProgress", ["value": min(overallProgress, 100)])
+                               }
+                           }
+                       }, completionHandler: { result in
                             filesProcessed += 1
                             results.append(result)
 
