@@ -144,6 +144,39 @@ public class ExpoIcloudStorageModule: Module {
         }
     }
 
+    private func handleDownloadProgress(_ progress: Double, _ fileSize: Int64, _ fileName: String, _ downloadProgressMap: inout [String: Int64], _ totalFilesSize: Int64, _ downloadedProgress: inout Int) {
+        if totalFilesSize > 0, progress.isFinite {
+            let fileProgress = Int64(Double(fileSize) / Double(totalFilesSize) * progress)
+            downloadProgressMap[fileName] = fileProgress
+
+            let totalProgress = downloadProgressMap.values.reduce(0, +)
+            let overallProgress = Double(totalProgress).rounded()
+            self.sendEvent("onDownloadFilesAsyncProgress", ["value": min(overallProgress, 100)])
+        } else {
+            print("Error: incorrect file size values")
+        }
+    }
+
+
+
+
+    private func handleDownloadCompletion(_ result: Result<String, Error>, _ filesProcessed: inout Int, _ totalFiles: Int, _ results: inout [Result<String, Error>], _ promise: Promise) {
+        results.append(result)
+        filesProcessed += 1
+        if filesProcessed == totalFiles {
+            let finalResults = results.map { result -> [String: Any] in
+                switch result {
+                case let .success(destinationPath):
+                    self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
+                    return ["success": true, "path": destinationPath]
+                case let .failure(error):
+                    return ["success": false, "error": error.localizedDescription]
+                }
+            }
+            promise.resolve(finalResults)
+        }
+    }
+
     private func fetchTotalFilesSize(paths: [String], completionHandler: @escaping (Result<(Int64, [String: Int64]), Error>) -> Void) {
         let fileManager = FileManager.default
         let query = NSMetadataQuery()
@@ -286,57 +319,44 @@ public class ExpoIcloudStorageModule: Module {
         }
 
         AsyncFunction("downloadFilesAsync") { (paths: [String], destinationDir: String, promise: Promise) in
-            guard (FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents")) != nil else {
+            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
                 promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
                 return
             }
             self.sendEvent("onDownloadFilesAsyncProgress", ["value": 0])
-            self.fetchTotalFilesSize(paths: paths) { [self] result in
+
+            self.fetchTotalFilesSize(paths: paths, completionHandler: { result in
                 switch result {
-                case let .success((totalFilesSize, downloadProgressMap)):
-                    let totalFiles = paths.count
-                    var downloadedProgress: Int = 0
+                case let .success((totalFilesSize, _)):
+                    var downloadProgressMap: [String: Int64] = [:]
+                    var downloadedProgress = 0
                     var filesProcessed = 0
                     var results: [Result<String, Error>] = []
+
                     if totalFilesSize == 0 {
-                        self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
-                    }
+                                    self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
+                                    promise.resolve([])
+                                    return
+                                }
+
                     for path in paths {
-                       downloadFile(path: path, destinationDir: destinationDir, progressCallback: { progress, fileSize, fileName in
-                           if totalFilesSize != 0 {
-                               if let previousProgress = downloadProgressMap[fileName] {
-                                   let relativeToTotalProgress = Int(Double(fileSize) / Double(totalFilesSize) * Double(progress))
-                                   let deltaProgress = relativeToTotalProgress - previousProgress
-                                   downloadedProgress += deltaProgress
-                                   downloadProgressMap[fileName] = relativeToTotalProgress
+                        let progressCallback: (Double, Int64, String) -> Void = { progress, fileSize, fileName in
+                            self.handleDownloadProgress(progress, fileSize, fileName, &downloadProgressMap, totalFilesSize, &downloadedProgress)
+                        }
 
-                                   let overallProgress = Double(downloadedProgress).rounded()
-                                   self.sendEvent("onDownloadFilesAsyncProgress", ["value": min(overallProgress, 100)])
-                               }
-                           }
-                       }, completionHandler: { result in
-                            filesProcessed += 1
-                            results.append(result)
+                        let completionHandler: (Result<String, Error>) -> Void = { result in
+                            self.handleDownloadCompletion(result, &filesProcessed, paths.count, &results, promise)
+                        }
 
-                            if filesProcessed == totalFiles {
-                                promise.resolve(results.map { result -> [String: Any] in
-                                    switch result {
-                                    case let .success(destinationPath):
-                                        self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
-                                        return ["success": true, "path": destinationPath]
-                                    case let .failure(error):
-                                        return ["success": false, "error": error.localizedDescription]
-                                    }
-                                })
-                            }
-                        })
+                        self.downloadFile(path: path, destinationDir: destinationDir, progressCallback: progressCallback, completionHandler: completionHandler)
                     }
-
                 case let .failure(error):
                     promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch file sizes: \(error.localizedDescription)"]))
                 }
-            }
+            })
         }
+
+
 
         AsyncFunction("uploadFileAsync") { (destinationPath: String, filePath: String, promise: Promise) in
             guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
@@ -425,3 +445,4 @@ public class ExpoIcloudStorageModule: Module {
         }
     }
 }
+
