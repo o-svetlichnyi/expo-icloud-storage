@@ -197,11 +197,8 @@ public class ExpoIcloudStorageModule: Module {
                 if let item = query.result(at: i) as? NSMetadataItem,
                    let fileName = item.value(forAttribute: NSMetadataItemFSNameKey) as? String,
                    let fileSize = item.value(forAttribute: NSMetadataItemFSSizeKey) as? Int64 {
-                    let downloadingStatus = item.value(forAttribute: NSMetadataUbiquitousItemDownloadingStatusKey) as? String
-                    if downloadingStatus != NSMetadataUbiquitousItemDownloadingStatusCurrent {
-                        totalFilesSize += fileSize
-                        filesSizeMap[fileName] = fileSize
-                    }
+                     totalFilesSize += fileSize
+                     filesSizeMap[fileName] = fileSize
                 }
                 if i == query.resultCount - 1 {
                     query.stop()
