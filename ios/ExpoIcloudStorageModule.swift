@@ -2,11 +2,26 @@ import ExpoModulesCore
 import Foundation
 
 public class ExpoIcloudStorageModule: Module {
-    private func uploadFile(destinationPath: String, filePath: String, documentsURL: URL, progressCallback: @escaping (Double, Int64, String) -> Void, completionHandler: @escaping (Result<String, Error>) -> Void) {
+    private var iCloudDocumentsURL: URL? {
+        FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents")
+    }
+
+    private func uploadFile(destinationPath: String, filePath: String, progressCallback: @escaping (Double, Int64, String) -> Void, completionHandler: @escaping (Result<String, Error>) -> Void) {
+        guard let currentDocumentsURL = self.iCloudDocumentsURL else {
+            completionHandler(.failure(NSError(domain: "expo-icloud-storage", code: 1, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible."])))
+            return
+        }
         let filePathWithoutPrefix = filePath.replacingOccurrences(of: "file://", with: "")
         let fileURL = URL(fileURLWithPath: filePathWithoutPrefix)
         let fileManager = FileManager.default
-        let destinationURL = documentsURL.appendingPathComponent(destinationPath)
+        let destinationURL = currentDocumentsURL.appendingPathComponent(destinationPath)
+        
+        // Check if the parent directory exists
+        let parentDirectory = destinationURL.deletingLastPathComponent()
+        if !fileManager.fileExists(atPath: parentDirectory.path) {
+            completionHandler(.failure(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Parent directory does not exist. Please create it first using createDirAsync."])))
+            return
+        }
 
         func processUploading(_ query: NSMetadataQuery, _ self: Any) {
             for i in 0 ..< query.resultCount {
@@ -73,6 +88,13 @@ public class ExpoIcloudStorageModule: Module {
         let destinationDirURL = URL(fileURLWithPath: destinationDir)
         let fileManager = FileManager.default
         let destinationURL = destinationDirURL.appendingPathComponent(fileManager.displayName(atPath: fileURL.path))
+        
+        // First, check if the file exists in iCloud
+        if !fileManager.fileExists(atPath: fileURL.path) {
+            // File doesn't exist, return an error immediately instead of starting the download
+            completionHandler(.failure(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(fileURL.path)"])))
+            return
+        }
 
         func copyAndFinish(sourceURL: URL) {
             do {
@@ -143,7 +165,7 @@ public class ExpoIcloudStorageModule: Module {
         }
     }
 
-    private func handleDownloadProgress(_ progress: Double, _ fileSize: Int64, _ fileName: String, _ downloadProgressMap: inout [String: Int64], _ totalFilesSize: Int64, _ downloadedProgress: inout Int) {
+    private func handleDownloadProgress(_ progress: Double, _ fileSize: Int64, _ fileName: String, _ downloadProgressMap: inout [String: Int64], _ totalFilesSize: Int64) {
         if totalFilesSize > 0, progress.isFinite {
             let fileProgress = Int64(Double(fileSize) / Double(totalFilesSize) * progress)
             downloadProgressMap[fileName] = fileProgress
@@ -155,9 +177,6 @@ public class ExpoIcloudStorageModule: Module {
             print("Error: incorrect file size values")
         }
     }
-
-
-
 
     private func handleDownloadCompletion(_ result: Result<String, Error>, _ filesProcessed: inout Int, _ totalFiles: Int, _ results: inout [Result<String, Error>], _ promise: Promise) {
         results.append(result)
@@ -219,38 +238,34 @@ public class ExpoIcloudStorageModule: Module {
             "defaultICloudContainerPath": FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? nil,
         ])
 
-        Function("getDefaultPathAsync") {
-            FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? nil
-        }
-
         AsyncFunction("isICloudAvailableAsync") { (promise: Promise) in
             let isICloudAvailable = FileManager.default.ubiquityIdentityToken != nil
             promise.resolve(isICloudAvailable)
         }
 
         AsyncFunction("isExistAsync") { (path: String, isDirectory: Bool, promise: Promise) in
-            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard let currentDocumentsURL = self.iCloudDocumentsURL else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
-            let fileURL = documentsURL.appendingPathComponent(path, isDirectory: isDirectory)
+            let fileURL = currentDocumentsURL.appendingPathComponent(path, isDirectory: isDirectory)
             promise.resolve(FileManager.default.fileExists(atPath: fileURL.path))
         }
 
         AsyncFunction("createDirAsync") { (path: String, promise: Promise) in
-            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard let currentDocumentsURL = self.iCloudDocumentsURL else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
 
-            let directoryURL = documentsURL.appendingPathComponent(path, isDirectory: true)
+            let directoryURL = currentDocumentsURL.appendingPathComponent(path, isDirectory: true)
 
             do {
                 try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
                 promise.resolve(true)
             } catch let error as NSError {
                 print("Error creating directory: \(error.localizedDescription)")
-                promise.reject(error)
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Failed to create directory: \(error.localizedDescription)"]))
             }
         }
 
@@ -274,19 +289,17 @@ public class ExpoIcloudStorageModule: Module {
         }
 
         AsyncFunction("readDirAsync") { (path: String, options: [String: Bool], promise: Promise) in
-
-            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard let currentDocumentsURL = self.iCloudDocumentsURL else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
                 return
             }
-            let directoryURL = documentsURL.appendingPathComponent(path, isDirectory: true)
+            let directoryURL = currentDocumentsURL.appendingPathComponent(path, isDirectory: true)
             guard let contents = try? FileManager.default.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil) else {
                 promise.resolve([])
                 return
             }
 
             let isFullPath = options["isFullPath"] ?? true
-            print(isFullPath)
             if isFullPath {
                 let fullPaths = contents.map { $0.path }
                 promise.resolve(fullPaths)
@@ -297,8 +310,16 @@ public class ExpoIcloudStorageModule: Module {
         }
 
         AsyncFunction("downloadFileAsync") { (path: String, destinationDir: String, promise: Promise) in
-            guard (FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents")) != nil else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard self.iCloudDocumentsURL != nil else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                return
+            }
+            
+            // Check if the file exists before attempting to download
+            let fileManager = FileManager.default
+            if !fileManager.fileExists(atPath: path) {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(path)"]))
+                self.sendEvent("onDownloadFilesAsyncProgress", ["value": 0])
                 return
             }
 
@@ -315,17 +336,40 @@ public class ExpoIcloudStorageModule: Module {
         }
 
         AsyncFunction("downloadFilesAsync") { (paths: [String], destinationDir: String, promise: Promise) in
-            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard self.iCloudDocumentsURL != nil else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             self.sendEvent("onDownloadFilesAsyncProgress", ["value": 0])
 
-            self.fetchTotalFilesSize(paths: paths, completionHandler: { result in
+            // Check if any of the files don't exist
+            let fileManager = FileManager.default
+            let nonExistentFiles = paths.filter { !fileManager.fileExists(atPath: $0) }
+            
+            if !nonExistentFiles.isEmpty {
+                if nonExistentFiles.count == paths.count {
+                    // None of the files exist
+                    promise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "None of the specified files exist in iCloud"]))
+                    return
+                } else {
+                    // Some files don't exist, just log a warning and continue with the files that do exist
+                    print("Warning: Some files don't exist and will be skipped: \(nonExistentFiles)")
+                }
+            }
+            
+            // Filter to only existing files
+            let existingPaths = paths.filter { fileManager.fileExists(atPath: $0) }
+            
+            if existingPaths.isEmpty {
+                self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
+                promise.resolve([])
+                return
+            }
+
+            self.fetchTotalFilesSize(paths: existingPaths, completionHandler: { result in
                 switch result {
                 case let .success((totalFilesSize, _)):
                     var downloadProgressMap: [String: Int64] = [:]
-                    var downloadedProgress = 0
                     var filesProcessed = 0
                     var results: [Result<String, Error>] = []
 
@@ -335,32 +379,30 @@ public class ExpoIcloudStorageModule: Module {
                                     return
                                 }
 
-                    for path in paths {
+                    for path in existingPaths {
                         let progressCallback: (Double, Int64, String) -> Void = { progress, fileSize, fileName in
-                            self.handleDownloadProgress(progress, fileSize, fileName, &downloadProgressMap, totalFilesSize, &downloadedProgress)
+                            self.handleDownloadProgress(progress, fileSize, fileName, &downloadProgressMap, totalFilesSize)
                         }
 
                         let completionHandler: (Result<String, Error>) -> Void = { result in
-                            self.handleDownloadCompletion(result, &filesProcessed, paths.count, &results, promise)
+                            self.handleDownloadCompletion(result, &filesProcessed, existingPaths.count, &results, promise)
                         }
 
                         self.downloadFile(path: path, destinationDir: destinationDir, progressCallback: progressCallback, completionHandler: completionHandler)
                     }
                 case let .failure(error):
-                    promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch file sizes: \(error.localizedDescription)"]))
+                    promise.reject(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch file sizes: \(error.localizedDescription)"]))
                 }
             })
         }
 
-
-
         AsyncFunction("uploadFileAsync") { (destinationPath: String, filePath: String, promise: Promise) in
-            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard self.iCloudDocumentsURL != nil else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             self.sendEvent("onUploadFilesAsyncProgress", ["value": 0])
-            uploadFile(destinationPath: destinationPath, filePath: filePath, documentsURL: documentsURL, progressCallback: { progress, _, _ in
+            uploadFile(destinationPath: destinationPath, filePath: filePath, progressCallback: { progress, _, _ in
                 self.sendEvent("onUploadFilesAsyncProgress", ["value": Double(progress).rounded()])
             }, completionHandler: { result in
                 switch result {
@@ -374,10 +416,18 @@ public class ExpoIcloudStorageModule: Module {
         }
 
         AsyncFunction("uploadFilesAsync") { (destinationDirectory: String, filePaths: [String], promise: Promise) in
-            guard let documentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+            guard let currentDocumentsURL = self.iCloudDocumentsURL else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
+            
+            // Check if the destination directory exists
+            let destDirURL = currentDocumentsURL.appendingPathComponent(destinationDirectory, isDirectory: true)
+            if !FileManager.default.fileExists(atPath: destDirURL.path) {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Destination directory does not exist. Please create it first using createDirAsync."]))
+                return
+            }
+            
             let totalFiles = filePaths.count
             var filesProcessed = 0
             var results: [Result<String, Error>] = []
@@ -410,7 +460,7 @@ public class ExpoIcloudStorageModule: Module {
                     let fileURL = URL(fileURLWithPath: filePathWithoutPrefix)
                     let destinationPath = destinationDirectory + "/" + fileURL.lastPathComponent
 
-                    self.uploadFile(destinationPath: destinationPath, filePath: filePath, documentsURL: documentsURL, progressCallback: { progress, fileSize, _ in
+                    self.uploadFile(destinationPath: destinationPath, filePath: filePath, progressCallback: { progress, fileSize, _ in
                         if totalSize != 0 {
                             let relativeToTotalProgress = Int(Double(fileSize) / Double(totalSize) * progress)
 

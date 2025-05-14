@@ -42,7 +42,6 @@ Add **usesIcloudStorage** and a **NSUbiquitousContainers** entry inside `ios.inf
 {
   "expo": {
     "ios": {
-      "usesIcloudStorage": true,
       "infoPlist": {
         "NSUbiquitousContainers": {
           "iCloud.$(CFBundleIdentifier)": {
@@ -127,6 +126,27 @@ const sub = addUploadFilesAsyncProgressListener(({ value }) => console.log('Prog
 
 // Later → sub.remove();
 ```
+
+### Running the Example App
+
+A full example Expo application is included in the `example` directory. To run it:
+
+1. **Build the module first:**
+   ```bash
+   # From the root directory
+   npm run prepare
+   ```
+
+2. **Run the example:**
+   ```bash
+   cd example
+   npm install
+   npm run ios
+   ```
+
+The example app demonstrates all the module's features with a simple UI.
+
+![Expo iCloud Storage Example App Screenshot](./example/assets/screenshot-example.png)
 
 ---
 

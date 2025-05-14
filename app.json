@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "ExpoIcloudStorageExample",
+    "slug": "ExpoIcloudStorageExample",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+     "platforms": [
+      "ios"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.expoicloudstorage",
+      "usesIcloudStorage": true,
+      "infoPlist": {
+        "NSUbiquitousContainers": {
+          "iCloud.com.example.expoicloudstorage": {
+            "NSUbiquitousContainerIsDocumentScopePublic": true, 
+            "NSUbiquitousContainerName": "ExpoIcloudStorageExample",
+            "NSUbiquitousContainerSupportedFolderLevels": "Any"
+          }
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+} 
