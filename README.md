@@ -184,13 +184,13 @@ The example app demonstrates all the module's features with a simple UI.
 | `defaultICloudContainerPath` | `string \| null` | Absolute path to the app's iCloud container. `null` if iCloud is disabled. |
 | `isICloudAvailableAsync()` | `Promise<boolean>` | Detect whether the user is signed in to iCloud and the capability is enabled. |
 | `isExistAsync(path, isDirectory)` | `Promise<boolean>` | Check if a file **or directory** exists inside the container. |
-| `createDirAsync(path)` | `Promise<void>` | Recursively create a folder inside iCloud Drive. |
+| `createDirAsync(path)` | `Promise<boolean>` | Recursively create a folder inside iCloud Drive. |
 | `readDirAsync(path, { isFullPath? })` | `Promise<string[]>` | List directory contents. When `isFullPath` is `false` only file names are returned. |
-| `uploadFileAsync({ destinationPath, filePath })` | `Promise<void>` | Upload a single local file (`file://…`) to iCloud. |
-| `uploadFilesAsync({ destinationDirectory, filePaths })` | `Promise<void>` | Upload **multiple** files to the given directory. Progress events are emitted (see below). |
+| `uploadFileAsync({ destinationPath, filePath })` | `Promise<string>` | Upload a single local file (`file://…`) to iCloud; resolves with the uploaded file path. |
+| `uploadFilesAsync({ destinationDirectory, filePaths })` | `Promise<ICloudFileOperationResult[]>` | Upload **multiple** files to the given directory. Progress events are emitted (see below). |
 | `downloadFileAsync(path, destinationDir)` | `Promise<string>` | Download a remote file; resolves with the **local** path once copied. |
-| `downloadFilesAsync(paths, destinationDir)` | `Promise<Array<{ success: boolean; path: string }>>` | Download an array of iCloud file paths at once. Emits progress events and returns the result for every file. |
-| `unlinkAsync(path)` | `Promise<void>` | Permanently remove a file or folder from iCloud Drive. |
+| `downloadFilesAsync(paths, destinationDir)` | `Promise<ICloudFileOperationResult[]>` | Download an array of iCloud file paths at once. Emits progress events and returns the result for every file. |
+| `unlinkAsync(path)` | `Promise<boolean>` | Permanently remove a file or folder from iCloud Drive. |
 
 ### Events
 

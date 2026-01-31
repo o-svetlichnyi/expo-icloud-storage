@@ -11,7 +11,8 @@
       "import": "./build/index.js",
       "require": "./build/index.js",
       "default": "./build/index.js"
-    }
+    },
+    "./app.plugin.js": "./app.plugin.js"
   },
   "files": [
     "build",
