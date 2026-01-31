@@ -4,9 +4,12 @@ import {
   Subscription,
 } from "expo-modules-core";
 
-import ExpoIcloudStorageModule from "./ExpoIcloudStorageModule";
+import ExpoIcloudStorageModule, {
+  ICloudFileOperationResult,
+  IReadDirAsyncOptions,
+} from "./ExpoIcloudStorageModule";
 const emitter = new EventEmitter(
-  ExpoIcloudStorageModule ?? NativeModulesProxy.ExpoIcloudStorage
+  ExpoIcloudStorageModule ?? NativeModulesProxy.ExpoIcloudStorage,
 );
 
 /**
@@ -38,7 +41,7 @@ export interface IProgressEventPayload {
  * @returns Subscription that can be removed with .remove()
  */
 export function addUploadFilesAsyncProgressListener(
-  listener: (event: IProgressEventPayload) => void
+  listener: (event: IProgressEventPayload) => void,
 ): Subscription {
   return emitter.addListener("onUploadFilesAsyncProgress", listener);
 }
@@ -49,7 +52,7 @@ export function addUploadFilesAsyncProgressListener(
  * @returns Subscription that can be removed with .remove()
  */
 export function addDownloadFilesAsyncProgressListener(
-  listener: (event: IProgressEventPayload) => void
+  listener: (event: IProgressEventPayload) => void,
 ): Subscription {
   return emitter.addListener("onDownloadFilesAsyncProgress", listener);
 }
@@ -69,16 +72,9 @@ export const defaultICloudContainerPath: string | null =
  */
 export async function isExistAsync(
   path: string,
-  isDirectory: boolean
+  isDirectory: boolean,
 ): Promise<boolean> {
   return ExpoIcloudStorageModule.isExistAsync(path, isDirectory);
-}
-
-/**
- * Options for reading a directory
- */
-export interface IReadDirAsyncOptions {
-  isFullPath?: boolean;
 }
 
 /**
@@ -89,7 +85,7 @@ export interface IReadDirAsyncOptions {
  */
 export async function readDirAsync(
   path: string,
-  options: IReadDirAsyncOptions = { isFullPath: true }
+  options: IReadDirAsyncOptions = { isFullPath: true },
 ): Promise<string[]> {
   return ExpoIcloudStorageModule.readDirAsync(path, options);
 }
@@ -102,10 +98,10 @@ export async function readDirAsync(
 export async function uploadFilesAsync({
   destinationDirectory,
   filePaths,
-}: IUploadFilesAsync): Promise<void> {
+}: IUploadFilesAsync): Promise<ICloudFileOperationResult[]> {
   return ExpoIcloudStorageModule.uploadFilesAsync(
     destinationDirectory,
-    filePaths
+    filePaths,
   );
 }
 
@@ -117,11 +113,8 @@ export async function uploadFilesAsync({
 export async function uploadFileAsync({
   destinationPath,
   filePath,
-}: IUploadFileAsync): Promise<void> {
-  return ExpoIcloudStorageModule.uploadFileAsync(
-    destinationPath,
-    filePath
-  );
+}: IUploadFileAsync): Promise<string> {
+  return ExpoIcloudStorageModule.uploadFileAsync(destinationPath, filePath);
 }
 
 /**
@@ -129,7 +122,7 @@ export async function uploadFileAsync({
  * @param path The path to remove
  * @returns Promise that resolves when the item is removed
  */
-export async function unlinkAsync(path: string): Promise<void> {
+export async function unlinkAsync(path: string): Promise<boolean> {
   return ExpoIcloudStorageModule.unlinkAsync(path);
 }
 
@@ -138,7 +131,7 @@ export async function unlinkAsync(path: string): Promise<void> {
  * @param path The directory path to create
  * @returns Promise that resolves when the directory is created
  */
-export async function createDirAsync(path: string): Promise<void> {
+export async function createDirAsync(path: string): Promise<boolean> {
   return ExpoIcloudStorageModule.createDirAsync(path);
 }
 
@@ -158,9 +151,9 @@ export async function isICloudAvailableAsync(): Promise<boolean> {
  */
 export async function downloadFileAsync(
   path: string,
-  destinationPath: string
+  destinationDir: string,
 ): Promise<string> {
-  return ExpoIcloudStorageModule.downloadFileAsync(path, destinationPath);
+  return ExpoIcloudStorageModule.downloadFileAsync(path, destinationDir);
 }
 
 /**
@@ -171,9 +164,9 @@ export async function downloadFileAsync(
  */
 export async function downloadFilesAsync(
   paths: string[],
-  destinationPath: string
-): Promise<{ success: boolean; path: string }[]> {
-  return ExpoIcloudStorageModule.downloadFilesAsync(paths, destinationPath);
+  destinationDir: string,
+): Promise<ICloudFileOperationResult[]> {
+  return ExpoIcloudStorageModule.downloadFilesAsync(paths, destinationDir);
 }
 
 export { PathUtils } from "./path";

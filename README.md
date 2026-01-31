@@ -18,9 +18,9 @@ Use it to **upload / download files**, **create directories**, **check file exis
 
 ```bash
 # with npm
+npm install @oleg_svetlichnyi/expo-icloud-storage
+# or yarn
 yarn add @oleg_svetlichnyi/expo-icloud-storage
-# or npm
-npm install @oleg_svetlichnyi/expo-icloud-storage --save
 ```
 
 ### Expo managed workflow
@@ -35,13 +35,40 @@ Ensure you have configured the [Expo Modules API](https://docs.expo.dev/bare/ins
 
 ## 🍏 iOS configuration (app.json / app.config.js)
 
-Expo needs the proper iCloud entitlements.  
+Expo needs the proper iCloud entitlements and `NSUbiquitousContainers`.
+
+### Recommended (config plugin)
+
+Add the plugin and (optionally) override the container identifier:
+
+```jsonc
+{
+  "expo": {
+    "plugins": [
+      [
+        "@oleg_svetlichnyi/expo-icloud-storage",
+        {
+          "containerIdentifier": "iCloud.$(CFBundleIdentifier)",
+          "containerName": "$(PRODUCT_NAME)"
+        }
+      ]
+    ]
+  }
+}
+```
+
+By default the plugin enables `ios.usesIcloudStorage` (if it isn't set yet) and ensures
+`ios.infoPlist.NSUbiquitousContainers` contains the configured container identifier.
+
+### Manual (without plugin)
+
 Add **usesIcloudStorage** and a **NSUbiquitousContainers** entry inside `ios.infoPlist`:
 
 ```jsonc
 {
   "expo": {
     "ios": {
+      "usesIcloudStorage": true,
       "infoPlist": {
         "NSUbiquitousContainers": {
           "iCloud.$(CFBundleIdentifier)": {

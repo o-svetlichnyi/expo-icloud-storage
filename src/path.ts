@@ -6,10 +6,10 @@ export class PathUtils {
    * Removes the .icloud extension from a path
    * iCloud automatically adds a .icloud extension to files that are in the cloud
    * but not downloaded locally
-   * 
+   *
    * @param path The path with potential .icloud extension
    * @returns The path with .icloud extension removed
-   * 
+   *
    * @example
    * PathUtils.iCloudRemoveDotExt("photo.jpg.icloud") // returns "photo.jpg"
    */
@@ -20,10 +20,10 @@ export class PathUtils {
 
   /**
    * Gets the file extension from a path
-   * 
+   *
    * @param path The file path
    * @returns The file extension or undefined if no extension exists
-   * 
+   *
    * @example
    * PathUtils.ext("photo.jpg") // returns "jpg"
    * PathUtils.ext("file.with.multiple.dots.txt") // returns "txt"

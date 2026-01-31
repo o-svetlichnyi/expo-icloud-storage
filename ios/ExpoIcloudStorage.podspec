@@ -10,9 +10,9 @@ Pod::Spec.new do |s|
   s.license        = package['license']
   s.author         = package['author']
   s.homepage       = package['homepage']
-  s.platform       = :ios, '15.1'
-  s.swift_version  = '5.7'
-  s.source         = { git: 'https://github.com/o-svetlichnyi/expo-icloud-storage' }
+  s.platforms      = { :ios => '13.0' }
+  s.swift_version  = '5.4'
+  s.source         = { :git => 'https://github.com/o-svetlichnyi/expo-icloud-storage.git' }
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'

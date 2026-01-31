@@ -1,4 +1,10 @@
 declare module "ExpoIcloudStorageModule" {
+  type ICloudFileOperationResult = {
+    success: boolean;
+    path?: string;
+    error?: string;
+  };
+
   /**
    * Options for readDirAsync
    */
@@ -9,21 +15,21 @@ declare module "ExpoIcloudStorageModule" {
      */
     isFullPath?: boolean;
   }
-  
+
   interface ExpoIcloudStorageModule {
-    /** 
-     * Default path to the app's iCloud container 
-     * Will be null if iCloud is not available 
+    /**
+     * Default path to the app's iCloud container
+     * Will be null if iCloud is not available
      */
     defaultICloudContainerPath: string | null;
-    
+
     /**
      * Check if a file or directory exists in iCloud
      * @param path The path to check
      * @param isDirectory Whether the path is expected to be a directory
      */
     isExistAsync(path: string, isDirectory: boolean): Promise<boolean>;
-    
+
     /**
      * List the contents of a directory in iCloud
      * @param path The directory path to read
@@ -32,9 +38,9 @@ declare module "ExpoIcloudStorageModule" {
      */
     readDirAsync(
       path: string,
-      options: IReadDirAsyncOptions
+      options?: IReadDirAsyncOptions,
     ): Promise<string[]>;
-    
+
     /**
      * Upload multiple files to iCloud
      * @param destinationDirectory Destination directory in iCloud
@@ -42,33 +48,33 @@ declare module "ExpoIcloudStorageModule" {
      */
     uploadFilesAsync(
       destinationDirectory: string,
-      filePaths: string[]
-    ): Promise<void>;
-    
+      filePaths: string[],
+    ): Promise<ICloudFileOperationResult[]>;
+
     /**
      * Upload a single file to iCloud
      * @param destinationPath Destination path in iCloud
      * @param filePath Local file path to upload
      */
-    uploadFileAsync(destinationPath: string, filePath: string): Promise<void>;
-    
+    uploadFileAsync(destinationPath: string, filePath: string): Promise<string>;
+
     /**
      * Remove a file or directory from iCloud
      * @param path The path to remove
      */
-    unlinkAsync(path: string): Promise<void>;
-    
+    unlinkAsync(path: string): Promise<boolean>;
+
     /**
      * Create a directory in iCloud
      * @param path The directory path to create
      */
-    createDirAsync(path: string): Promise<void>;
-    
+    createDirAsync(path: string): Promise<boolean>;
+
     /**
      * Check if iCloud is available for the current user
      */
     isICloudAvailableAsync(): Promise<boolean>;
-    
+
     /**
      * Download a file from iCloud
      * @param filePath The source path in iCloud
@@ -76,9 +82,9 @@ declare module "ExpoIcloudStorageModule" {
      */
     downloadFileAsync(
       filePath: string,
-      destinationPath: string
+      destinationDir: string,
     ): Promise<string>;
-    
+
     /**
      * Download multiple files from iCloud
      * @param filePaths Array of source paths in iCloud
@@ -86,8 +92,8 @@ declare module "ExpoIcloudStorageModule" {
      */
     downloadFilesAsync(
       filePaths: string[],
-      destinationPath: string
-    ): Promise<{ success: boolean; path: string }[]>;
+      destinationDir: string,
+    ): Promise<ICloudFileOperationResult[]>;
   }
 
   const ExpoIcloudStorage: ExpoIcloudStorageModule;

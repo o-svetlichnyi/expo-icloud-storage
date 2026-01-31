@@ -1,22 +1,32 @@
 {
   "name": "@oleg_svetlichnyi/expo-icloud-storage",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Expo module for working with iCloud",
-  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "react-native": "build/index.js",
   "exports": {
     ".": {
+      "types": "./build/index.d.ts",
       "import": "./build/index.js",
-      "require": "./build/index.cjs",
-      "types": "./build/index.d.ts"
+      "require": "./build/index.js",
+      "default": "./build/index.js"
     }
   },
+  "files": [
+    "build",
+    "ios",
+    "src",
+    "expo-module.config.json",
+    "app.plugin.js",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "expo-module build",
     "clean": "expo-module clean",
     "lint": "expo-module lint",
-    "test": "expo-module test",
+    "test": "expo-module test --passWithNoTests",
     "prepare": "expo-module prepare",
     "prepublishOnly": "expo-module prepublishOnly",
     "expo-module": "expo-module"
@@ -45,15 +55,11 @@
     "expo-module-scripts": "^3.5.0",
     "expo-modules-core": "^1.11.9"
   },
-  "expo": {
-    "autolinking": {
-      "nativeModulesDir": "./expo-icloud-storage"
-    }
-  },
   "peerDependencies": {
-    "expo": ">=51.0.0 <53.0.0",
-    "react": ">=18.0.0 <19.0.0",
-    "react-native": ">=0.76.0 <0.77.0"
+    "expo": ">=49.0.0",
+    "expo-modules-core": ">=1.0.0",
+    "react": ">=18.0.0 <20.0.0",
+    "react-native": ">=0.72.0"
   },
   "engines": {
     "node": ">=18.0.0"
