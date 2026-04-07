@@ -1,15 +1,31 @@
-import {
-  NativeModulesProxy,
-  EventEmitter,
-  Subscription,
-} from "expo-modules-core";
+import { NativeModulesProxy, EventEmitter } from "expo-modules-core";
 
 import ExpoIcloudStorageModule, {
   ICloudFileOperationResult,
   IReadDirAsyncOptions,
 } from "./ExpoIcloudStorageModule";
-const emitter = new EventEmitter(
-  ExpoIcloudStorageModule ?? NativeModulesProxy.ExpoIcloudStorage,
+
+/**
+ * Progress event payload for upload and download operations
+ */
+export interface IProgressEventPayload {
+  value: number;
+}
+
+type ExpoIcloudStorageEvents = {
+  onUploadFilesAsyncProgress: (event: IProgressEventPayload) => void;
+  onDownloadFilesAsyncProgress: (event: IProgressEventPayload) => void;
+};
+
+export interface IEventSubscription {
+  remove(): void;
+}
+
+const emitter = new EventEmitter<ExpoIcloudStorageEvents>(
+  (ExpoIcloudStorageModule ??
+    NativeModulesProxy.ExpoIcloudStorage) as unknown as ConstructorParameters<
+    typeof EventEmitter
+  >[0],
 );
 
 function normalizeLocalFileSystemPath(path: string): string {
@@ -33,20 +49,13 @@ export interface IUploadFileAsync {
 }
 
 /**
- * Progress event payload for upload and download operations
- */
-export interface IProgressEventPayload {
-  value: number;
-}
-
-/**
  * Add a listener for file upload progress events
  * @param listener Function that will be called when progress updates
  * @returns Subscription that can be removed with .remove()
  */
 export function addUploadFilesAsyncProgressListener(
   listener: (event: IProgressEventPayload) => void,
-): Subscription {
+): IEventSubscription {
   return emitter.addListener("onUploadFilesAsyncProgress", listener);
 }
 
@@ -57,7 +66,7 @@ export function addUploadFilesAsyncProgressListener(
  */
 export function addDownloadFilesAsyncProgressListener(
   listener: (event: IProgressEventPayload) => void,
-): Subscription {
+): IEventSubscription {
   return emitter.addListener("onDownloadFilesAsyncProgress", listener);
 }
 

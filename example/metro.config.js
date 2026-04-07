@@ -3,23 +3,28 @@ const path = require("path");
 
 // Find the project and workspace directories
 const projectRoot = __dirname;
-// Workspace root is ../../ from the project root
-const workspaceRoot = path.resolve(projectRoot, "../..");
+const workspaceRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
 
-// 1. Watch all files in the workspace
-config.watchFolders = [projectRoot, workspaceRoot];
+config.watchFolders = [workspaceRoot];
 
-// 2. Let Metro know where to resolve packages and in what order
+config.resolver.disableHierarchicalLookup = true;
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"), // In case you have a root node_modules
+  path.resolve(projectRoot, "node_modules/expo/node_modules"),
+  path.resolve(projectRoot, "node_modules/react-native/node_modules"),
 ];
 
-// 3. Force Metro to resolve the library from the local symlink
 config.resolver.extraNodeModules = {
   "@oleg_svetlichnyi/expo-icloud-storage": workspaceRoot,
+  expo: path.resolve(projectRoot, "node_modules/expo"),
+  "expo-modules-core": path.resolve(
+    projectRoot,
+    "node_modules/expo-modules-core",
+  ),
+  react: path.resolve(projectRoot, "node_modules/react"),
+  "react-native": path.resolve(projectRoot, "node_modules/react-native"),
 };
 
-module.exports = config; 
+module.exports = config;

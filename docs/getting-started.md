@@ -14,7 +14,7 @@ Use it when your app needs to upload, download, or back up user-owned files:
 ## Requirements
 
 - iOS 13+
-- Expo SDK 49+ or a React Native app using Expo Modules
+- Expo SDK 53+ or a React Native app using compatible Expo Modules
 - a development build, EAS build, prebuild, or bare iOS app
 - iCloud capability enabled for your iOS app target
 - a user signed in to iCloud on the device

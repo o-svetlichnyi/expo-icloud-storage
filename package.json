@@ -1,6 +1,6 @@
 {
   "name": "@oleg_svetlichnyi/expo-icloud-storage",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -61,16 +61,28 @@
   "license": "MIT",
   "homepage": "https://o-svetlichnyi.github.io/expo-icloud-storage/",
   "devDependencies": {
-    "@types/react": "^18.3.0",
-    "expo-module-scripts": "^3.5.0",
-    "expo-modules-core": "^1.11.9",
+    "@types/react": "^18.3.28",
+    "eslint": "^9.39.4",
+    "expo-module-scripts": "^55.0.2",
+    "expo-modules-core": "^55.0.21",
+    "prettier": "^3.8.1",
     "vitepress": "^1.6.4"
   },
   "peerDependencies": {
-    "expo": ">=49.0.0",
-    "expo-modules-core": ">=1.0.0",
+    "expo": ">=53.0.0",
     "react": ">=18.0.0 <20.0.0",
     "react-native": ">=0.72.0"
+  },
+  "overrides": {
+    "jsdom": {
+      "http-proxy-agent": "7.0.2"
+    },
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.13"
+    },
+    "vitepress": {
+      "vite": "6.4.2"
+    }
   },
   "engines": {
     "node": ">=18.0.0"

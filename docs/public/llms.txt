@@ -4,7 +4,7 @@
 
 `@oleg_svetlichnyi/expo-icloud-storage` is an iOS-only Expo Module for iCloud Drive file operations. It is useful when an Expo or React Native iOS app needs user-controlled iCloud backup and restore flows without writing native Swift code.
 
-The package works in Expo development builds, Expo prebuild, EAS iOS builds, and bare React Native iOS apps that have Expo Modules installed. It does not run in Expo Go, Android, Web, or pure React Native apps without Expo Modules.
+The package works with Expo SDK 53+ in Expo development builds, Expo prebuild, EAS iOS builds, and bare React Native iOS apps that have compatible Expo Modules installed. The example app is currently tested on Expo SDK 55. It does not run in Expo Go, Android, Web, or pure React Native apps without Expo Modules.
 
 ## Docs
 

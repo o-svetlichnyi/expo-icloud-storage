@@ -36,7 +36,7 @@ export async function backupRealmFile(realm: Realm) {
 ## Restore
 
 ```ts
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
   defaultICloudContainerPath,
   downloadFileAsync,

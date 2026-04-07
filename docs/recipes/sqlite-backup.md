@@ -7,7 +7,7 @@ The exact database path depends on how your app creates the database. Many Expo 
 ## Backup
 
 ```ts
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
   createDirAsync,
   isICloudAvailableAsync,
@@ -44,7 +44,7 @@ export async function backupSQLiteDatabase() {
 ## Restore
 
 ```ts
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
   defaultICloudContainerPath,
   downloadFileAsync,

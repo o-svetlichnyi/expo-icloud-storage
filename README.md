@@ -15,7 +15,7 @@ Use it to upload, download, list, delete, and build backup flows for SQLite, Rea
 ## Features
 
 - iOS-only Expo Module for iCloud Drive file operations.
-- Works in Expo development builds, EAS builds, prebuild, and bare React Native apps using Expo Modules.
+- Works with Expo SDK 53+ in development builds, EAS builds, prebuild, and bare React Native apps using Expo Modules.
 - Config plugin for iCloud entitlements and `NSUbiquitousContainers`.
 - Typed API with TypeScript definitions.
 - Upload and download progress listeners.
@@ -56,7 +56,7 @@ Full setup guide: https://o-svetlichnyi.github.io/expo-icloud-storage/getting-st
 ## Quick Start
 
 ```ts
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
   createDirAsync,
   defaultICloudContainerPath,

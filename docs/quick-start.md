@@ -3,7 +3,7 @@
 This flow creates a local file, uploads it to iCloud Drive, lists the directory, downloads it, and deletes it.
 
 ```ts
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
   createDirAsync,
   defaultICloudContainerPath,

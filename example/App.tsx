@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, ScrollView, Alert, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import {
   defaultICloudContainerPath,
   isICloudAvailableAsync,

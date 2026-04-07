@@ -6,11 +6,12 @@
 
 | Environment | Status | Notes |
 | --- | --- | --- |
+| Expo SDK 53+ | Supported | The current native module uses Expo Modules APIs available from SDK 53 onward. The example app is currently tested on SDK 55. |
 | Expo development build | Supported | Use `npx expo run:ios` or EAS development builds. |
 | Expo prebuild | Supported | The config plugin writes the iCloud configuration during prebuild. |
 | EAS iOS build | Supported | The app must use an iCloud-capable bundle identifier and provisioning profile. |
 | Bare React Native iOS app | Supported with Expo Modules | Install Expo Modules, install pods, and configure the iCloud capability. |
-| React Native New Architecture | Supported | The package is an Expo Module and the example app is configured with `newArchEnabled: true`. |
+| React Native New Architecture | Supported | The package is an Expo Module. The SDK 55 example app builds with New Architecture enabled. |
 | iOS simulator | Partially supported | Useful for launch/build checks. iCloud availability depends on the simulator being signed in to iCloud. |
 | Physical iOS device | Supported | Best environment for real iCloud Drive upload/download testing. |
 
@@ -23,10 +24,11 @@
 | Web | Not supported | It uses iOS iCloud Drive APIs. |
 | Pure React Native without Expo Modules | Not supported | The JavaScript bridge and native module use `expo-modules-core`. |
 | Real-time multi-device sync engine | Not provided | iCloud Drive sync timing is controlled by iOS. This package exposes file operations, not a conflict-resolution sync layer. |
+| Expo SDK 52 and older | Not supported by the current release | Expo Modules did not yet expose the `Constant(...)` native API used by this release. |
 
 ## Can I use it in a React Native app?
 
-Yes, if the app has Expo Modules installed and is built for iOS. The package peer dependencies include `react-native`, `expo`, and `expo-modules-core`, and the native pod depends on `ExpoModulesCore`.
+Yes, if the app has Expo Modules installed and is built for iOS. The package peer dependencies include `react-native` and `expo`; the JavaScript bridge imports `expo-modules-core` through the Expo runtime, and the native pod depends on `ExpoModulesCore`.
 
 For bare React Native apps, install Expo Modules first, then install this package and run CocoaPods:
 

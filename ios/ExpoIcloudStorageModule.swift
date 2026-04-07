@@ -234,9 +234,9 @@ public class ExpoIcloudStorageModule: Module {
     public func definition() -> ModuleDefinition {
         Name("ExpoIcloudStorage")
         Events("onUploadFilesAsyncProgress", "onDownloadFilesAsyncProgress")
-        Constants([
-            "defaultICloudContainerPath": FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? nil,
-        ])
+        Constant("defaultICloudContainerPath") {
+            FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path
+        }
 
         AsyncFunction("isICloudAvailableAsync") { (promise: Promise) in
             let isICloudAvailable = FileManager.default.ubiquityIdentityToken != nil
@@ -273,7 +273,6 @@ public class ExpoIcloudStorageModule: Module {
             let fileURL = URL(fileURLWithPath: path)
 
             guard let iCloudContainer = FileManager.default.url(forUbiquityContainerIdentifier: nil),
-                  let iCloudDocumentsURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents"),
                   fileURL.path.hasPrefix(iCloudContainer.path) else {
                 promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid iCloud path"]))
                 return
@@ -491,4 +490,3 @@ public class ExpoIcloudStorageModule: Module {
         }
     }
 }
-
