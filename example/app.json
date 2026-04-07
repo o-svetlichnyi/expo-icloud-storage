@@ -20,19 +20,17 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.expoicloudstorage",
-      "usesIcloudStorage": true,
-      "infoPlist": {
-        "NSUbiquitousContainers": {
-          "iCloud.com.example.expoicloudstorage": {
-            "NSUbiquitousContainerIsDocumentScopePublic": true, 
-            "NSUbiquitousContainerName": "ExpoIcloudStorageExample",
-            "NSUbiquitousContainerSupportedFolderLevels": "Any"
-          }
-        }
-      }
+      "bundleIdentifier": "com.example.expoicloudstorage"
     },
     "plugins": [
+      [
+        "@oleg_svetlichnyi/expo-icloud-storage",
+        {
+          "containerIdentifier": "iCloud.com.example.expoicloudstorage",
+          "containerName": "ExpoIcloudStorageExample",
+          "isDocumentScopePublic": true
+        }
+      ],
       [
         "expo-build-properties",
           {

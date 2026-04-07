@@ -33,15 +33,43 @@ npm run ios
 
 The example is iOS-only. You need an iCloud-capable Apple Developer setup for the full flow.
 
-For a real device test, use your own Apple Developer team, a unique bundle identifier, and a matching iCloud container identifier. The checked-in example uses placeholder identifiers:
+For a real device test, use your own Apple Developer team, a unique bundle identifier, and a matching iCloud container identifier. The checked-in example dogfoods this package's config plugin with placeholder identifiers:
 
 ```json
 {
-  "ios": {
-    "bundleIdentifier": "com.example.expoicloudstorage",
-    "infoPlist": {
-      "NSUbiquitousContainers": {
-        "iCloud.com.example.expoicloudstorage": {}
+  "expo": {
+    "ios": {
+      "bundleIdentifier": "com.example.expoicloudstorage"
+    },
+    "plugins": [
+      [
+        "@oleg_svetlichnyi/expo-icloud-storage",
+        {
+          "containerIdentifier": "iCloud.com.example.expoicloudstorage",
+          "containerName": "ExpoIcloudStorageExample",
+          "isDocumentScopePublic": true
+        }
+      ]
+    ]
+  }
+}
+```
+
+The plugin expands this into `ios.usesIcloudStorage` and `NSUbiquitousContainers` during Expo config evaluation:
+
+```json
+{
+  "expo": {
+    "ios": {
+      "usesIcloudStorage": true,
+      "infoPlist": {
+        "NSUbiquitousContainers": {
+          "iCloud.com.example.expoicloudstorage": {
+            "NSUbiquitousContainerIsDocumentScopePublic": true,
+            "NSUbiquitousContainerName": "ExpoIcloudStorageExample",
+            "NSUbiquitousContainerSupportedFolderLevels": "Any"
+          }
+        }
       }
     }
   }
