@@ -30,6 +30,7 @@ The package includes a config plugin so Expo can generate the iCloud capability 
 | `supportedFolderLevels` | `string` | `Any` | Value for `NSUbiquitousContainerSupportedFolderLevels`. |
 | `enableUsesIcloudStorage` | `boolean` | `true` | Enables `ios.usesIcloudStorage` when it is not already set. |
 | `configureUbiquitousContainers` | `boolean` | `true` | Adds the `NSUbiquitousContainers` entry. |
+| `configureEntitlements` | `boolean` | `true` | Adds the iCloud container and `CloudDocuments` service to the generated entitlements plist. |
 
 ## Manual configuration
 

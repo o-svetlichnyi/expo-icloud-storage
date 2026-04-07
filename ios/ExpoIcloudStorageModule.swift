@@ -2,8 +2,21 @@ import ExpoModulesCore
 import Foundation
 
 public class ExpoIcloudStorageModule: Module {
+    private var iCloudContainerIdentifier: String? {
+        guard let containers = Bundle.main.object(forInfoDictionaryKey: "NSUbiquitousContainers") as? [String: Any],
+              let containerIdentifier = containers.keys.sorted().first else {
+            return nil
+        }
+        return containerIdentifier
+    }
+
+    private var iCloudContainerURL: URL? {
+        FileManager.default.url(forUbiquityContainerIdentifier: iCloudContainerIdentifier)
+            ?? FileManager.default.url(forUbiquityContainerIdentifier: nil)
+    }
+
     private var iCloudDocumentsURL: URL? {
-        FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents")
+        iCloudContainerURL?.appendingPathComponent("Documents")
     }
 
     private func uploadFile(destinationPath: String, filePath: String, progressCallback: @escaping (Double, Int64, String) -> Void, completionHandler: @escaping (Result<String, Error>) -> Void) {
@@ -235,7 +248,7 @@ public class ExpoIcloudStorageModule: Module {
         Name("ExpoIcloudStorage")
         Events("onUploadFilesAsyncProgress", "onDownloadFilesAsyncProgress")
         Constant("defaultICloudContainerPath") {
-            FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path
+            self.iCloudContainerURL?.path
         }
 
         AsyncFunction("isICloudAvailableAsync") { (promise: Promise) in
@@ -272,19 +285,34 @@ public class ExpoIcloudStorageModule: Module {
         AsyncFunction("unlinkAsync") { (path: String, promise: Promise) in
             let fileURL = URL(fileURLWithPath: path)
 
-            guard let iCloudContainer = FileManager.default.url(forUbiquityContainerIdentifier: nil),
+            guard let iCloudContainer = self.iCloudContainerURL,
                   fileURL.path.hasPrefix(iCloudContainer.path) else {
                 promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid iCloud path"]))
                 return
             }
 
-            do {
-                try FileManager.default.removeItem(at: fileURL)
-                promise.resolve(true)
-            } catch let error as NSError {
-                print("Error removing item: \(error.localizedDescription)")
-                promise.reject(error)
+            let fileManager = FileManager.default
+            guard fileManager.fileExists(atPath: fileURL.path) else {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(fileURL.path)"]))
+                return
             }
+
+            var coordinatorError: NSError?
+            var removeError: NSError?
+            NSFileCoordinator(filePresenter: nil).coordinate(writingItemAt: fileURL, options: .forDeleting, error: &coordinatorError) { coordinatedURL in
+                do {
+                    try fileManager.removeItem(at: coordinatedURL)
+                } catch let error as NSError {
+                    removeError = error
+                }
+            }
+
+            if let error = removeError ?? coordinatorError {
+                promise.reject(NSError(domain: "expo-icloud-storage", code: 1005, userInfo: [NSLocalizedDescriptionKey: "Failed to remove iCloud item at \(fileURL.path): \(error.localizedDescription)", NSUnderlyingErrorKey: error]))
+                return
+            }
+
+            promise.resolve(true)
         }
 
         AsyncFunction("readDirAsync") { (path: String, options: [String: Bool], promise: Promise) in
