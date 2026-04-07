@@ -49,6 +49,15 @@ export default defineConfig({
       "link",
       { rel: "sitemap", type: "application/xml", href: `${base}sitemap.xml` },
     ],
+    [
+      "link",
+      {
+        rel: "alternate",
+        type: "text/markdown",
+        title: "LLM documentation",
+        href: `${base}llms.txt`,
+      },
+    ],
     ["meta", { name: "author", content: "Oleg Svetlichnyi" }],
     [
       "meta",
