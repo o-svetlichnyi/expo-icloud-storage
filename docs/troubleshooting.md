@@ -29,7 +29,7 @@ For `uploadFilesAsync`, the `destinationDirectory` must already exist.
 
 ## Download or delete cannot find the file
 
-`downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` expect full iCloud file paths.
+`downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` expect full iCloud file paths for the iCloud source or delete target.
 
 ```ts
 const fullPath = `${defaultICloudContainerPath}/Documents/Exports/export.json`;
@@ -37,6 +37,8 @@ const fullPath = `${defaultICloudContainerPath}/Documents/Exports/export.json`;
 await downloadFileAsync(fullPath, localDestinationDir);
 await unlinkAsync(fullPath);
 ```
+
+For downloads, the local destination directory can be an Expo FileSystem `file://` URI or a plain local filesystem path.
 
 By contrast, `uploadFileAsync`, `createDirAsync`, `readDirAsync`, and `isExistAsync` use paths relative to the iCloud `Documents` directory.
 

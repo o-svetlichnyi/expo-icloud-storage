@@ -1,13 +1,16 @@
 import { defineConfig } from "vitepress";
 
+const base = "/expo-icloud-storage/";
+
 export default defineConfig({
   title: "Expo iCloud Storage",
   description:
     "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.",
-  base: "/expo-icloud-storage/",
+  base,
   cleanUrls: true,
   lastUpdated: true,
   head: [
+    ["link", { rel: "icon", type: "image/webp", href: `${base}logo.webp` }],
     [
       "meta",
       {
@@ -27,7 +30,7 @@ export default defineConfig({
     ],
   ],
   themeConfig: {
-    logo: "/logo.svg",
+    logo: "/logo.webp",
     search: {
       provider: "local",
     },

@@ -67,7 +67,7 @@ import {
   uploadFileAsync,
 } from "@oleg_svetlichnyi/expo-icloud-storage";
 
-export async function syncExportFile() {
+export async function roundTripExportFile() {
   const available = await isICloudAvailableAsync();
 
   if (!available || !defaultICloudContainerPath) {
@@ -98,7 +98,7 @@ export async function syncExportFile() {
 }
 ```
 
-Path rule: `createDirAsync`, `readDirAsync`, `isExistAsync`, `uploadFileAsync`, and `uploadFilesAsync` use paths relative to iCloud `Documents`. `downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` use full iCloud file paths.
+Path rule: `createDirAsync`, `readDirAsync`, `isExistAsync`, `uploadFileAsync`, and `uploadFilesAsync` use paths relative to iCloud `Documents`. `downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` use full iCloud source paths; download destination directories can be Expo FileSystem `file://` URIs or plain local paths.
 
 Read the full quick start: https://o-svetlichnyi.github.io/expo-icloud-storage/quick-start
 

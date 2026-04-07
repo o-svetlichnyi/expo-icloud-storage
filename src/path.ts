@@ -4,7 +4,7 @@
 export class PathUtils {
   /**
    * Removes the .icloud extension from a path
-   * iCloud automatically adds a .icloud extension to files that are in the cloud
+   * iCloud may add a .icloud extension to files that are in the cloud
    * but not downloaded locally
    *
    * @param path The path with potential .icloud extension
@@ -15,7 +15,7 @@ export class PathUtils {
    */
   static iCloudRemoveDotExt(path: string): string {
     if (!path) return path;
-    return path.replace(/(.*?)(\.(.*?)\.icloud)$/, "$1$3");
+    return path.replace(/\.icloud$/, "");
   }
 
   /**

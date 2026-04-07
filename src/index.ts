@@ -12,6 +12,10 @@ const emitter = new EventEmitter(
   ExpoIcloudStorageModule ?? NativeModulesProxy.ExpoIcloudStorage,
 );
 
+function normalizeLocalFileSystemPath(path: string): string {
+  return path.replace(/^file:\/\//, "");
+}
+
 /**
  * Configuration for uploading multiple files
  */
@@ -146,27 +150,33 @@ export async function isICloudAvailableAsync(): Promise<boolean> {
 /**
  * Download a file from iCloud
  * @param path The source path in iCloud
- * @param destinationPath The local destination path
+ * @param destinationDir The local destination directory
  * @returns Promise that resolves to the local path of the downloaded file
  */
 export async function downloadFileAsync(
   path: string,
   destinationDir: string,
 ): Promise<string> {
-  return ExpoIcloudStorageModule.downloadFileAsync(path, destinationDir);
+  return ExpoIcloudStorageModule.downloadFileAsync(
+    path,
+    normalizeLocalFileSystemPath(destinationDir),
+  );
 }
 
 /**
  * Download multiple files from iCloud
  * @param paths Array of source paths in iCloud
- * @param destinationPath The local destination directory
+ * @param destinationDir The local destination directory
  * @returns Promise that resolves to an array of download results
  */
 export async function downloadFilesAsync(
   paths: string[],
   destinationDir: string,
 ): Promise<ICloudFileOperationResult[]> {
-  return ExpoIcloudStorageModule.downloadFilesAsync(paths, destinationDir);
+  return ExpoIcloudStorageModule.downloadFilesAsync(
+    paths,
+    normalizeLocalFileSystemPath(destinationDir),
+  );
 }
 
 export { PathUtils } from "./path";

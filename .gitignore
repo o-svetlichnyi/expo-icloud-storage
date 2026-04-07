@@ -63,4 +63,6 @@ android/keystores/debug.keystore
 
 # VitePress
 docs/.vitepress/.temp/
+docs/.vitepress/cache/
 docs/.vitepress/dist/
+.gstack/

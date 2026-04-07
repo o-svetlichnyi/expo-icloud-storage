@@ -6,7 +6,7 @@ hero:
   text: Typed iCloud Drive file API for Expo iOS apps.
   tagline: Upload, download, list, delete, and build backup flows for SQLite, Realm, documents, exports, and media without writing native iOS code.
   image:
-    src: /logo.svg
+    src: /logo.webp
     alt: Expo iCloud Storage
   actions:
     - theme: brand
@@ -27,7 +27,7 @@ features:
   - title: Config plugin included
     details: Add iCloud entitlements and NSUbiquitousContainers from app.json or app.config.js.
   - title: Backup recipes
-    details: Start with generic file sync, then adapt the SQLite and Realm backup recipes for your app.
+    details: Start with generic upload and download, then adapt the SQLite and Realm backup recipes for your app.
 ---
 
 ```bash

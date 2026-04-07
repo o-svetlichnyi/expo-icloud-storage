@@ -20,6 +20,13 @@
   max-width: 720px;
 }
 
+.VPNavBarTitle .logo {
+  width: 48px;
+  height: 48px;
+  max-width: none;
+  max-height: none;
+}
+
 .vp-doc code {
   font-size: 0.9em;
 }

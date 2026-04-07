@@ -68,6 +68,8 @@ Uploads a local file to a destination path relative to iCloud `Documents`.
 
 The parent directory must already exist. Create it with `createDirAsync()` before uploading.
 
+`filePath` can be an Expo FileSystem `file://` URI or a plain local filesystem path.
+
 ### `uploadFilesAsync(options)`
 
 ```ts
@@ -87,6 +89,8 @@ Uploads multiple local files into a destination directory relative to iCloud `Do
 
 The destination directory must already exist.
 
+Each `filePaths` entry can be an Expo FileSystem `file://` URI or a plain local filesystem path.
+
 ## Download
 
 ### `downloadFileAsync(path, destinationDir)`
@@ -100,6 +104,8 @@ function downloadFileAsync(
 
 Downloads a full iCloud file path into a local destination directory.
 
+`destinationDir` can be an Expo FileSystem `file://` URI or a plain local filesystem path.
+
 ### `downloadFilesAsync(paths, destinationDir)`
 
 ```ts
@@ -110,6 +116,8 @@ function downloadFilesAsync(
 ```
 
 Downloads multiple full iCloud file paths into a local destination directory.
+
+`destinationDir` can be an Expo FileSystem `file://` URI or a plain local filesystem path.
 
 ## Delete
 

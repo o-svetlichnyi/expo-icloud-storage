@@ -68,7 +68,7 @@ Relative to iCloud `Documents`:
 - `uploadFileAsync({ destinationPath, filePath })`
 - `uploadFilesAsync({ destinationDirectory, filePaths })`
 
-Full iCloud file paths:
+Methods whose iCloud source path must be a full iCloud file path:
 
 - `downloadFileAsync(path, destinationDir)`
 - `downloadFilesAsync(paths, destinationDir)`
@@ -79,6 +79,8 @@ Use `defaultICloudContainerPath` to build full paths:
 ```ts
 const fullPath = `${defaultICloudContainerPath}/Documents/Exports/export.json`;
 ```
+
+For downloads, `destinationDir` can be an Expo FileSystem `file://` URI such as `FileSystem.documentDirectory + "downloads"` or a plain local filesystem path.
 
 ## Progress events
 

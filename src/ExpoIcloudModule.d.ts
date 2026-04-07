@@ -78,7 +78,7 @@ declare module "ExpoIcloudStorageModule" {
     /**
      * Download a file from iCloud
      * @param filePath The source path in iCloud
-     * @param destinationPath The local destination path
+     * @param destinationDir The local destination directory
      */
     downloadFileAsync(
       filePath: string,
@@ -88,7 +88,7 @@ declare module "ExpoIcloudStorageModule" {
     /**
      * Download multiple files from iCloud
      * @param filePaths Array of source paths in iCloud
-     * @param destinationPath The local destination directory
+     * @param destinationDir The local destination directory
      */
     downloadFilesAsync(
       filePaths: string[],

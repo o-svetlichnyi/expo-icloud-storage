@@ -2,7 +2,7 @@
 
 `@oleg_svetlichnyi/expo-icloud-storage` gives Expo iOS apps a typed API for iCloud Drive file operations.
 
-Use it when your app needs to sync or back up user-owned files:
+Use it when your app needs to upload, download, or back up user-owned files:
 
 - SQLite databases
 - Realm files
