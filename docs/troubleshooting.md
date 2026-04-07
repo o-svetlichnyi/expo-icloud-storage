@@ -1,3 +1,7 @@
+---
+description: Troubleshooting guide for iCloud availability, path rules, simulator issues, signing, and iCloud container configuration.
+---
+
 # Troubleshooting
 
 ## `isICloudAvailableAsync()` returns `false`

@@ -1,15 +1,21 @@
+---
+description: Install and configure Expo iCloud Storage for generic iCloud Drive file operations in Expo iOS apps.
+---
+
 # Getting Started
 
-`@oleg_svetlichnyi/expo-icloud-storage` gives Expo iOS apps a typed API for iCloud Drive file operations. It can also run in bare React Native iOS apps that have Expo Modules installed.
+`@oleg_svetlichnyi/expo-icloud-storage` gives Expo iOS apps typed iCloud Drive file operations from TypeScript. It can also run in bare React Native iOS apps that have Expo Modules installed.
 
-Use it when your app needs to upload, download, or back up user-owned files:
+Use it when your app needs generic file operations in its iCloud container:
 
-- SQLite databases
-- Realm files
 - JSON exports
+- app-generated archives
 - documents
 - media files
-- app-generated archives
+- manual backup and restore flows
+- SQLite and Realm backup recipes built on top of upload/download
+
+SQLite and Realm are recipes, not special database-specific native integrations.
 
 ## Requirements
 

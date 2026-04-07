@@ -1,3 +1,7 @@
+---
+description: Configure iCloud entitlements and NSUbiquitousContainers for Expo iOS apps with the Expo iCloud Storage config plugin.
+---
+
 # Expo Config Plugin
 
 The package includes a config plugin so Expo can generate the iCloud capability configuration during prebuild.

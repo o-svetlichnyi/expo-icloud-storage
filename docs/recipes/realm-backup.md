@@ -1,6 +1,12 @@
+---
+description: Recipe for backing up and restoring a Realm file with the generic iCloud upload/download API.
+---
+
 # Recipe: Realm Backup and Restore
 
 Realm files can be copied like any other local file, but you should make sure the file is in a consistent state before backing it up.
+
+It uses the generic file upload and download API. The package does not include a Realm-specific native backup engine.
 
 ## Backup
 

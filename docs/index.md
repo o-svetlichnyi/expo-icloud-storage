@@ -1,10 +1,11 @@
 ---
 layout: home
+description: Typed iCloud Drive file operations for Expo iOS apps. Upload, download, list, delete, and track progress in an app iCloud container.
 
 hero:
   name: Expo iCloud Storage
-  text: Typed iCloud Drive file API for Expo iOS apps.
-  tagline: Upload, download, list, delete, and build backup flows for SQLite, Realm, documents, exports, and media without writing native iOS code.
+  text: iCloud Drive file operations for Expo iOS.
+  tagline: Upload, download, list, delete, and track progress for files in your app's iCloud container, without writing native iOS code.
   image:
     src: /logo.webp
     alt: Expo iCloud Storage
@@ -22,12 +23,12 @@ hero:
 features:
   - title: Expo-first iCloud Drive access
     details: Use a typed JavaScript API from an Expo iOS development build or a bare React Native iOS app with Expo Modules.
-  - title: File operations that map to real app flows
+  - title: Generic file operations
     details: Create folders, list files, upload, download, delete, and listen for progress events.
   - title: Config plugin included
     details: Add iCloud entitlements and NSUbiquitousContainers from app.json or app.config.js.
-  - title: Backup recipes
-    details: Start with generic upload and download, then adapt the SQLite and Realm backup recipes for your app.
+  - title: Recipes built on the file API
+    details: Use the same upload/download primitives for exports, documents, media, SQLite backups, and Realm backups.
 ---
 
 ```bash
@@ -42,20 +43,24 @@ import {
   defaultICloudContainerPath,
 } from "@oleg_svetlichnyi/expo-icloud-storage";
 
-await createDirAsync("Backups");
+await createDirAsync("Exports");
 
 await uploadFileAsync({
-  destinationPath: "Backups/export.json",
+  destinationPath: "Exports/export.json",
   filePath: "/path/to/local/export.json",
 });
 
 const restoredPath = await downloadFileAsync(
-  `${defaultICloudContainerPath}/Documents/Backups/export.json`,
+  `${defaultICloudContainerPath}/Documents/Exports/export.json`,
   "/path/to/local/downloads"
 );
 ```
 
 This module is iOS-only and requires iCloud capability configuration. It does not run in Expo Go because it includes native code.
+
+## Use cases
+
+Use the generic file API for JSON exports, app-generated archives, documents, media files, and manual backup or restore flows. SQLite and Realm are recipes built on the same upload/download API, not special database-specific native integrations.
 
 ## Common questions
 

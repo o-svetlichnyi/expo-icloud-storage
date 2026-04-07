@@ -1,8 +1,8 @@
 # Expo iCloud Storage
 
-> Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows for SQLite, Realm, documents, exports, and media.
+> Typed iCloud Drive file operations for Expo iOS apps. Upload, download, list, delete, and track progress in an app iCloud container.
 
-`@oleg_svetlichnyi/expo-icloud-storage` is an iOS-only Expo Module for iCloud Drive file operations. It is useful when an Expo or React Native iOS app needs user-controlled iCloud backup and restore flows without writing native Swift code.
+`@oleg_svetlichnyi/expo-icloud-storage` is an iOS-only Expo Module for iCloud Drive file operations. It is useful when an Expo or React Native iOS app needs to manage files in an app iCloud container without writing native Swift code.
 
 The package works with Expo SDK 53+ in Expo development builds, Expo prebuild, EAS iOS builds, and bare React Native iOS apps that have compatible Expo Modules installed. The example app is currently tested on Expo SDK 55. It does not run in Expo Go, Android, Web, or pure React Native apps without Expo Modules.
 
@@ -40,11 +40,17 @@ The package works with Expo SDK 53+ in Expo development builds, Expo prebuild, E
 - `addDownloadFilesAsyncProgressListener(listener)`: listen for download progress events.
 - `PathUtils`: helpers for `.icloud` placeholder paths and extensions.
 
+## Use cases
+
+Use the generic file API for JSON exports, app-generated archives, documents, media files, and manual backup or restore flows.
+
+SQLite and Realm are recipes built on the generic upload/download API, not special database-specific native integrations.
+
 ## Path rules
 
 `createDirAsync`, `readDirAsync`, `isExistAsync`, `uploadFileAsync`, and `uploadFilesAsync` use paths relative to the app's iCloud `Documents` directory.
 
-`downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` use full iCloud source paths. Build full paths with `defaultICloudContainerPath`, for example: `${defaultICloudContainerPath}/Documents/Backups/export.json`.
+`downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` use full iCloud source paths. Build full paths with `defaultICloudContainerPath`, for example: `${defaultICloudContainerPath}/Documents/Exports/export.json`.
 
 Local upload file paths and download destination directories can be Expo FileSystem `file://` URIs or plain local filesystem paths.
 

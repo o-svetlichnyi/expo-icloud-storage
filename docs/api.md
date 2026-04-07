@@ -1,3 +1,7 @@
+---
+description: API reference for Expo iCloud Storage iCloud Drive file operations, path rules, and progress events.
+---
+
 # API Reference
 
 ## Constants

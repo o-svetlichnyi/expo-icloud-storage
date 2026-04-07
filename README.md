@@ -4,9 +4,9 @@
 [![npm downloads](https://img.shields.io/npm/dm/%40oleg_svetlichnyi%2Fexpo-icloud-storage.svg)](https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage)
 [![license](https://img.shields.io/npm/l/%40oleg_svetlichnyi%2Fexpo-icloud-storage.svg)](LICENSE)
 
-Typed iCloud Drive file API for Expo iOS apps.
+Typed iCloud Drive file operations for Expo iOS apps.
 
-Use it to upload, download, list, delete, and build backup flows for SQLite, Realm, documents, exports, and media without writing native iOS code.
+Use it to upload, download, list, delete, and track progress for files in your app's iCloud container without writing native iOS code.
 
 - Docs: https://o-svetlichnyi.github.io/expo-icloud-storage/
 - npm: https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage
@@ -22,6 +22,18 @@ Use it to upload, download, list, delete, and build backup flows for SQLite, Rea
 - Example app included in `example/`.
 
 This module does not run in Expo Go because it includes native iOS code.
+
+## Use Cases
+
+Use the generic file API for:
+
+- JSON exports and imports
+- app-generated archives
+- documents and media files
+- manual "Back up now" and "Restore from iCloud" flows
+- SQLite and Realm backup recipes built on top of upload/download
+
+SQLite and Realm are recipes built on the generic file API, not special database-specific native integrations.
 
 ## Install
 
@@ -123,6 +135,8 @@ Read the full quick start: https://o-svetlichnyi.github.io/expo-icloud-storage/q
 Full API reference: https://o-svetlichnyi.github.io/expo-icloud-storage/api
 
 ## Recipes
+
+Recipes are examples of what you can build with the generic upload/download API:
 
 - SQLite backup and restore: https://o-svetlichnyi.github.io/expo-icloud-storage/recipes/sqlite-backup
 - Realm backup and restore: https://o-svetlichnyi.github.io/expo-icloud-storage/recipes/realm-backup

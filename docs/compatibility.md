@@ -1,3 +1,7 @@
+---
+description: Compatibility matrix for Expo iCloud Storage across Expo SDK, React Native, Expo Go, iOS simulator, and physical devices.
+---
+
 # Compatibility
 
 `@oleg_svetlichnyi/expo-icloud-storage` is an Expo-first iOS native module. It can also be used in bare React Native apps that have Expo Modules installed.
@@ -24,6 +28,7 @@
 | Web | Not supported | It uses iOS iCloud Drive APIs. |
 | Pure React Native without Expo Modules | Not supported | The JavaScript bridge and native module use `expo-modules-core`. |
 | Real-time multi-device sync engine | Not provided | iCloud Drive sync timing is controlled by iOS. This package exposes file operations, not a conflict-resolution sync layer. |
+| Database-specific backup engine | Not provided | SQLite and Realm examples are recipes built on generic file upload/download APIs. |
 | Expo SDK 52 and older | Not supported by the current release | Expo Modules did not yet expose the `Constant(...)` native API used by this release. |
 
 ## Can I use it in a React Native app?
@@ -50,15 +55,17 @@ No. The API can create directories, upload files, list directories, download fil
 
 ## Good use cases
 
-- Backing up an Expo SQLite database to iCloud Drive.
-- Backing up a Realm database file to iCloud Drive.
 - Uploading JSON exports or app-generated archives.
-- Restoring a user-selected backup file.
-- Listing and deleting backup files in the app's iCloud container.
+- Uploading and downloading documents or media files in the app's iCloud container.
+- Listing and deleting user-managed iCloud files.
+- Building manual "Back up now" and "Restore from iCloud" flows.
+- Backing up an Expo SQLite database to iCloud Drive with the SQLite recipe.
+- Backing up a Realm database file to iCloud Drive with the Realm recipe.
 
 ## Poor fit
 
 - Cross-platform storage for Android and iOS.
 - Real-time collaborative sync.
 - Background conflict resolution across multiple devices.
+- Database-specific backup automation.
 - Apps that must work inside Expo Go.

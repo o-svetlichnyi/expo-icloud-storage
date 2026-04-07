@@ -1,6 +1,12 @@
+---
+description: Recipe for backing up and restoring an Expo SQLite database file with the generic iCloud upload/download API.
+---
+
 # Recipe: SQLite Backup and Restore
 
 This recipe shows how to copy a local SQLite database file to iCloud Drive and restore it later.
+
+It uses the generic file upload and download API. The package does not include a SQLite-specific native backup engine.
 
 The exact database path depends on how your app creates the database. Many Expo SQLite apps store databases under `FileSystem.documentDirectory + "SQLite/"`.
 

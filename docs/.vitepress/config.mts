@@ -5,9 +5,9 @@ const base = "/expo-icloud-storage/";
 const siteUrl = "https://o-svetlichnyi.github.io";
 const siteBaseUrl = `${siteUrl}${base}`;
 const siteDescription =
-  "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.";
+  "Typed iCloud Drive file operations for Expo iOS apps. Upload, download, list, delete, and track progress in an app iCloud container.";
 const siteKeywords =
-  "expo, react-native, ios, icloud, icloud-drive, expo-module, file-system, backup, sqlite backup, realm backup";
+  "expo, react-native, ios, icloud, icloud-drive, expo-module, file-system, file-upload, file-download, cloud-storage, ios-storage, backup";
 
 function pageToCanonicalUrl(page: string): string {
   const path = page
@@ -78,9 +78,9 @@ export default defineConfig({
       provider: "local",
     },
     nav: [
-      { text: "Guide", link: "/getting-started" },
+      { text: "Get Started", link: "/getting-started" },
+      { text: "Quick Start", link: "/quick-start" },
       { text: "API", link: "/api" },
-      { text: "Recipes", link: "/recipes/sqlite-backup" },
       { text: "Compatibility", link: "/compatibility" },
       {
         text: "npm",
@@ -92,10 +92,10 @@ export default defineConfig({
         text: "Guide",
         items: [
           { text: "Getting Started", link: "/getting-started" },
-          { text: "Expo Config Plugin", link: "/config-plugin" },
           { text: "Quick Start", link: "/quick-start" },
-          { text: "Compatibility", link: "/compatibility" },
           { text: "API Reference", link: "/api" },
+          { text: "Expo Config Plugin", link: "/config-plugin" },
+          { text: "Compatibility", link: "/compatibility" },
           { text: "Troubleshooting", link: "/troubleshooting" },
           { text: "Example App", link: "/example-app" },
         ],

@@ -1,3 +1,7 @@
+---
+description: Run the Expo iCloud Storage example app and verify generic iCloud Drive file operations on iOS.
+---
+
 # Example App
 
 The repository includes an Expo example app in the `example/` directory.
