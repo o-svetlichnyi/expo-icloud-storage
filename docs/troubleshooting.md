@@ -12,6 +12,12 @@ Check:
 
 This module does not run in Expo Go.
 
+On a simulator, this can be an environment issue rather than an app bug. A simulator that is not signed in to iCloud will report iCloud as unavailable.
+
+On a physical device, Xcode also needs a working Apple Development signing setup and matching device support. If Xcode reports that the developer disk image cannot be mounted, or the device appears as `connected (no DDI)`, update Xcode or install device support for that iOS version before testing iCloud flows.
+
+If you are running the repository example app on a physical device, replace the placeholder `com.example.expoicloudstorage` bundle identifier and `iCloud.com.example.expoicloudstorage` container with identifiers configured for your Apple Developer team.
+
 ## Upload fails with "Parent directory does not exist"
 
 Create the destination directory first:
