@@ -1,34 +1,68 @@
 import { defineConfig } from "vitepress";
+import type { HeadConfig, TransformContext } from "vitepress";
 
 const base = "/expo-icloud-storage/";
+const siteUrl = "https://o-svetlichnyi.github.io";
+const siteBaseUrl = `${siteUrl}${base}`;
+const siteDescription =
+  "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.";
+const siteKeywords =
+  "expo, react-native, ios, icloud, icloud-drive, expo-module, file-system, backup, sqlite backup, realm backup";
+
+function pageToCanonicalUrl(page: string): string {
+  const path = page
+    .replace(/(^|\/)index\.md$/, "$1")
+    .replace(/\.md$/, "");
+
+  return new URL(path, siteBaseUrl).toString();
+}
+
+function createPageHead(context: TransformContext): HeadConfig[] {
+  const canonicalUrl = pageToCanonicalUrl(context.page);
+  const title = context.title.includes("Expo iCloud Storage")
+    ? context.title
+    : `${context.title} | Expo iCloud Storage`;
+  const description = context.description || siteDescription;
+
+  return [
+    ["link", { rel: "canonical", href: canonicalUrl }],
+    ["meta", { property: "og:url", content: canonicalUrl }],
+    ["meta", { property: "og:title", content: title }],
+    ["meta", { property: "og:description", content: description }],
+    ["meta", { name: "twitter:title", content: title }],
+    ["meta", { name: "twitter:description", content: description }],
+  ];
+}
 
 export default defineConfig({
   title: "Expo iCloud Storage",
-  description:
-    "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.",
+  description: siteDescription,
   base,
   cleanUrls: true,
   lastUpdated: true,
+  sitemap: {
+    hostname: siteBaseUrl,
+  },
   head: [
     ["link", { rel: "icon", type: "image/webp", href: `${base}logo.webp` }],
+    [
+      "link",
+      { rel: "sitemap", type: "application/xml", href: `${base}sitemap.xml` },
+    ],
+    ["meta", { name: "author", content: "Oleg Svetlichnyi" }],
     [
       "meta",
       {
         name: "keywords",
-        content:
-          "expo, react-native, ios, icloud, icloud-drive, expo-module, file-system, backup",
+        content: siteKeywords,
       },
     ],
-    ["meta", { property: "og:title", content: "Expo iCloud Storage" }],
-    [
-      "meta",
-      {
-        property: "og:description",
-        content:
-          "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.",
-      },
-    ],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:image", content: `${siteBaseUrl}logo.webp` }],
+    ["meta", { name: "twitter:card", content: "summary" }],
+    ["meta", { name: "twitter:image", content: `${siteBaseUrl}logo.webp` }],
   ],
+  transformHead: createPageHead,
   themeConfig: {
     logo: "/logo.webp",
     search: {
@@ -38,6 +72,7 @@ export default defineConfig({
       { text: "Guide", link: "/getting-started" },
       { text: "API", link: "/api" },
       { text: "Recipes", link: "/recipes/sqlite-backup" },
+      { text: "Compatibility", link: "/compatibility" },
       {
         text: "npm",
         link: "https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage",
@@ -50,6 +85,7 @@ export default defineConfig({
           { text: "Getting Started", link: "/getting-started" },
           { text: "Expo Config Plugin", link: "/config-plugin" },
           { text: "Quick Start", link: "/quick-start" },
+          { text: "Compatibility", link: "/compatibility" },
           { text: "API Reference", link: "/api" },
           { text: "Troubleshooting", link: "/troubleshooting" },
           { text: "Example App", link: "/example-app" },

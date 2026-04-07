@@ -21,7 +21,7 @@ hero:
 
 features:
   - title: Expo-first iCloud Drive access
-    details: Use a typed JavaScript API from an Expo iOS development build or bare React Native app.
+    details: Use a typed JavaScript API from an Expo iOS development build or a bare React Native iOS app with Expo Modules.
   - title: File operations that map to real app flows
     details: Create folders, list files, upload, download, delete, and listen for progress events.
   - title: Config plugin included
@@ -56,3 +56,19 @@ const restoredPath = await downloadFileAsync(
 ```
 
 This module is iOS-only and requires iCloud capability configuration. It does not run in Expo Go because it includes native code.
+
+## Common questions
+
+### Can I use this in a React Native app?
+
+Yes, in a bare React Native iOS app that has Expo Modules installed. It is not a pure React Native native module because the JavaScript bridge and iOS pod use `expo-modules-core`.
+
+### Can I use this in Expo Go?
+
+No. Use an Expo development build, EAS iOS build, prebuild, or a bare iOS app.
+
+### Does this sync files automatically?
+
+No. It provides iCloud Drive file operations. iOS controls when files propagate between devices.
+
+Read the full [compatibility guide](./compatibility.md).

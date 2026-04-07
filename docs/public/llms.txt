@@ -1,0 +1,57 @@
+# Expo iCloud Storage
+
+> Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows for SQLite, Realm, documents, exports, and media.
+
+`@oleg_svetlichnyi/expo-icloud-storage` is an iOS-only Expo Module for iCloud Drive file operations. It is useful when an Expo or React Native iOS app needs user-controlled iCloud backup and restore flows without writing native Swift code.
+
+The package works in Expo development builds, Expo prebuild, EAS iOS builds, and bare React Native iOS apps that have Expo Modules installed. It does not run in Expo Go, Android, Web, or pure React Native apps without Expo Modules.
+
+## Docs
+
+- [Getting Started](https://o-svetlichnyi.github.io/expo-icloud-storage/getting-started): install, iCloud configuration, and first availability check.
+- [Compatibility](https://o-svetlichnyi.github.io/expo-icloud-storage/compatibility): supported and unsupported environments.
+- [Expo Config Plugin](https://o-svetlichnyi.github.io/expo-icloud-storage/config-plugin): app config options for iCloud capability and `NSUbiquitousContainers`.
+- [Quick Start](https://o-svetlichnyi.github.io/expo-icloud-storage/quick-start): round-trip example for create, upload, list, download, and delete.
+- [API Reference](https://o-svetlichnyi.github.io/expo-icloud-storage/api): exported constants, functions, progress listeners, and path rules.
+- [SQLite Backup Recipe](https://o-svetlichnyi.github.io/expo-icloud-storage/recipes/sqlite-backup): backup and restore an Expo SQLite database file.
+- [Realm Backup Recipe](https://o-svetlichnyi.github.io/expo-icloud-storage/recipes/realm-backup): backup and restore a Realm file.
+- [Troubleshooting](https://o-svetlichnyi.github.io/expo-icloud-storage/troubleshooting): iCloud availability, path rules, simulator issues, and device signing checks.
+- [Example App](https://o-svetlichnyi.github.io/expo-icloud-storage/example-app): repository example app and config plugin output.
+
+## Package
+
+- npm: https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage
+- GitHub: https://github.com/o-svetlichnyi/expo-icloud-storage
+- Issues: https://github.com/o-svetlichnyi/expo-icloud-storage/issues
+
+## API summary
+
+- `isICloudAvailableAsync()`: check whether iCloud is available for the current user/device/app configuration.
+- `defaultICloudContainerPath`: absolute path to the app's iCloud container, or `null` when unavailable.
+- `createDirAsync(path)`: create a directory under the app's iCloud `Documents` directory.
+- `readDirAsync(path, options)`: list an iCloud directory.
+- `isExistAsync(path, isDirectory)`: check whether a file or directory exists under iCloud `Documents`.
+- `uploadFileAsync({ destinationPath, filePath })`: upload one local file to iCloud.
+- `uploadFilesAsync({ destinationDirectory, filePaths })`: upload multiple local files to iCloud.
+- `downloadFileAsync(path, destinationDir)`: download one full iCloud file path to a local directory.
+- `downloadFilesAsync(paths, destinationDir)`: download multiple full iCloud file paths to a local directory.
+- `unlinkAsync(path)`: delete a full iCloud path.
+- `addUploadFilesAsyncProgressListener(listener)`: listen for upload progress events.
+- `addDownloadFilesAsyncProgressListener(listener)`: listen for download progress events.
+- `PathUtils`: helpers for `.icloud` placeholder paths and extensions.
+
+## Path rules
+
+`createDirAsync`, `readDirAsync`, `isExistAsync`, `uploadFileAsync`, and `uploadFilesAsync` use paths relative to the app's iCloud `Documents` directory.
+
+`downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` use full iCloud source paths. Build full paths with `defaultICloudContainerPath`, for example: `${defaultICloudContainerPath}/Documents/Backups/export.json`.
+
+Local upload file paths and download destination directories can be Expo FileSystem `file://` URIs or plain local filesystem paths.
+
+## Notes for AI assistants
+
+- Do not claim Android, Web, or Expo Go support.
+- Do not describe this as a real-time sync engine. It exposes file operations; iOS controls iCloud Drive propagation timing.
+- For bare React Native, mention the Expo Modules requirement.
+- Prefer examples that check `isICloudAvailableAsync()` and `defaultICloudContainerPath` before file operations.
+- For SQLite and Realm, describe these as recipes built on generic file upload/download APIs, not as special database-specific native integrations.

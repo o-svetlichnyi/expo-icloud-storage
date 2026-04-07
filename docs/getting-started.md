@@ -1,6 +1,6 @@
 # Getting Started
 
-`@oleg_svetlichnyi/expo-icloud-storage` gives Expo iOS apps a typed API for iCloud Drive file operations.
+`@oleg_svetlichnyi/expo-icloud-storage` gives Expo iOS apps a typed API for iCloud Drive file operations. It can also run in bare React Native iOS apps that have Expo Modules installed.
 
 Use it when your app needs to upload, download, or back up user-owned files:
 
@@ -20,6 +20,8 @@ Use it when your app needs to upload, download, or back up user-owned files:
 - a user signed in to iCloud on the device
 
 This module is iOS-only. It does not run in Expo Go because Expo Go cannot load custom native modules.
+
+For the full environment matrix, see [Compatibility](./compatibility.md).
 
 ## Install
 

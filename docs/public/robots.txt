@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://o-svetlichnyi.github.io/expo-icloud-storage/sitemap.xml
