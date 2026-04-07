@@ -1,7 +1,7 @@
 {
   "name": "@oleg_svetlichnyi/expo-icloud-storage",
   "version": "1.1.0",
-  "description": "Expo module for working with iCloud",
+  "description": "Typed iCloud Drive file API for Expo iOS apps. Upload, download, list, delete, and build backup flows.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "react-native": "build/index.js",
@@ -26,6 +26,9 @@
   "scripts": {
     "build": "expo-module build",
     "clean": "expo-module clean",
+    "docs:build": "vitepress build docs",
+    "docs:dev": "vitepress dev docs",
+    "docs:preview": "vitepress preview docs",
     "lint": "expo-module lint",
     "test": "expo-module test --passWithNoTests",
     "prepare": "expo-module prepare",
@@ -38,8 +41,14 @@
     "expo-icloud-storage",
     "ExpoIcloudStorage",
     "icloud",
+    "icloud-drive",
     "ios",
-    "storage"
+    "storage",
+    "file-system",
+    "backup",
+    "expo-module",
+    "ios-storage",
+    "react-native-ios"
   ],
   "repository": {
     "type": "git",
@@ -50,11 +59,12 @@
   },
   "author": "Oleg Svetlichnyi (https://github.com/o-svetlichnyi)",
   "license": "MIT",
-  "homepage": "https://github.com/o-svetlichnyi/expo-icloud-storage#readme",
+  "homepage": "https://o-svetlichnyi.github.io/expo-icloud-storage/",
   "devDependencies": {
     "@types/react": "^18.3.0",
     "expo-module-scripts": "^3.5.0",
-    "expo-modules-core": "^1.11.9"
+    "expo-modules-core": "^1.11.9",
+    "vitepress": "^1.6.4"
   },
   "peerDependencies": {
     "expo": ">=49.0.0",

@@ -60,3 +60,7 @@ android/keystores/debug.keystore
 # Expo
 .expo/*
 .history
+
+# VitePress
+docs/.vitepress/.temp/
+docs/.vitepress/dist/

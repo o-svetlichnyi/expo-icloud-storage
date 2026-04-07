@@ -1,47 +1,39 @@
 # Expo iCloud Storage
 
-A lightweight Expo module that provides a **typed JavaScript API** for interacting with a user's iCloud Drive.  
-Use it to **upload / download files**, **create directories**, **check file existence**, and **listen for real-time progress events** – all without leaving the JavaScript world.
+[![npm version](https://img.shields.io/npm/v/%40oleg_svetlichnyi%2Fexpo-icloud-storage.svg)](https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage)
+[![npm downloads](https://img.shields.io/npm/dm/%40oleg_svetlichnyi%2Fexpo-icloud-storage.svg)](https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage)
+[![license](https://img.shields.io/npm/l/%40oleg_svetlichnyi%2Fexpo-icloud-storage.svg)](LICENSE)
 
----
+Typed iCloud Drive file API for Expo iOS apps.
 
-## ✨ Features
+Use it to upload, download, list, delete, and build backup flows for SQLite, Realm, documents, exports, and media without writing native iOS code.
 
-- Works in **managed** and **bare** Expo or React Native projects (iOS 13+).
-- Promise-based API with TypeScript definitions out of the box.
-- Granular progress callbacks for batch **upload** and **download** operations.
-- Utility helpers for common path manipulations.
+- Docs: https://o-svetlichnyi.github.io/expo-icloud-storage/
+- npm: https://www.npmjs.com/package/@oleg_svetlichnyi/expo-icloud-storage
+- Issues: https://github.com/o-svetlichnyi/expo-icloud-storage/issues
 
----
+## Features
 
-## 📦 Installation
+- iOS-only Expo Module for iCloud Drive file operations.
+- Works in Expo development builds, EAS builds, prebuild, and bare React Native apps using Expo Modules.
+- Config plugin for iCloud entitlements and `NSUbiquitousContainers`.
+- Typed API with TypeScript definitions.
+- Upload and download progress listeners.
+- Example app included in `example/`.
+
+This module does not run in Expo Go because it includes native iOS code.
+
+## Install
 
 ```bash
-# with npm
 npm install @oleg_svetlichnyi/expo-icloud-storage
-# or yarn
-yarn add @oleg_svetlichnyi/expo-icloud-storage
 ```
 
-### Expo managed workflow
-Nothing else to do – the module will be autolinked at build time by the Expo SDK.
+## Configure iCloud
 
-### Bare React Native / Expo modules workflow
-Ensure you have configured the [Expo Modules API](https://docs.expo.dev/bare/installing-expo-modules/) in your iOS project, then run `pod install` inside the `ios` directory.
+Add the config plugin to `app.json` or `app.config.js`:
 
-> 🚨 **iCloud capability** – Open Xcode, select your target, _Signing & Capabilities_ → add **iCloud** with "iCloud Drive" checked.
-
----
-
-## 🍏 iOS configuration (app.json / app.config.js)
-
-Expo needs the proper iCloud entitlements and `NSUbiquitousContainers`.
-
-### Recommended (config plugin)
-
-Add the plugin and (optionally) override the container identifier:
-
-```jsonc
+```json
 {
   "expo": {
     "plugins": [
@@ -57,174 +49,108 @@ Add the plugin and (optionally) override the container identifier:
 }
 ```
 
-By default the plugin enables `ios.usesIcloudStorage` (if it isn't set yet) and ensures
-`ios.infoPlist.NSUbiquitousContainers` contains the configured container identifier.
+Then build an iOS development build, EAS build, prebuild, or bare iOS app. The user must be signed in to iCloud and iCloud Drive must be enabled on the device.
 
-### Manual (without plugin)
+Full setup guide: https://o-svetlichnyi.github.io/expo-icloud-storage/getting-started
 
-Add **usesIcloudStorage** and a **NSUbiquitousContainers** entry inside `ios.infoPlist`:
-
-```jsonc
-{
-  "expo": {
-    "ios": {
-      "usesIcloudStorage": true,
-      "infoPlist": {
-        "NSUbiquitousContainers": {
-          "iCloud.$(CFBundleIdentifier)": {
-            "NSUbiquitousContainerIsDocumentScopePublic": false,
-            "NSUbiquitousContainerName": "$(PRODUCT_NAME)",
-            "NSUbiquitousContainerSupportedFolderLevels": "Any"
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-> Replace the container identifier if you created a custom one in the Apple Developer portal.
-
----
-
-## 🚀 Example
-
-The snippet below brings together **every** export of the library so you can see them in action. It backs up a local SQLite DB to iCloud and restores it back.
+## Quick Start
 
 ```ts
+import * as FileSystem from "expo-file-system";
 import {
-  defaultICloudContainerPath,
-  isICloudAvailableAsync,
   createDirAsync,
-  isExistAsync,
+  defaultICloudContainerPath,
+  downloadFileAsync,
+  isICloudAvailableAsync,
   readDirAsync,
-  uploadFilesAsync,
   unlinkAsync,
   uploadFileAsync,
-  downloadFileAsync,
-  downloadFilesAsync,
-  PathUtils,
-  addUploadFilesAsyncProgressListener,
-  addDownloadFilesAsyncProgressListener,
-} from '@oleg_svetlichnyi/expo-icloud-storage';
-import * as FileSystem from 'expo-file-system';
+} from "@oleg_svetlichnyi/expo-icloud-storage";
 
-async function backupDatabase() {
-  if (!(await isICloudAvailableAsync())) {
-    console.warn('iCloud unavailable');
-    return;
+export async function syncExportFile() {
+  const available = await isICloudAvailableAsync();
+
+  if (!available || !defaultICloudContainerPath) {
+    throw new Error("iCloud is not available for this app/user.");
   }
 
-  const containerDocs = `${defaultICloudContainerPath}/Documents`;
-  const sqlDir = `${containerDocs}/SQL`;
+  const localFile = `${FileSystem.documentDirectory}export.json`;
+  const downloadDir = `${FileSystem.documentDirectory}downloads`;
+  const remoteDirectory = "Exports";
+  const remoteRelativePath = `${remoteDirectory}/export.json`;
+  const remoteFullPath = `${defaultICloudContainerPath}/Documents/${remoteRelativePath}`;
 
-  // Make sure destination folder exists
-  if (!(await isExistAsync(sqlDir, true))) {
-    await createDirAsync('SQL');
-  }
+  await FileSystem.writeAsStringAsync(localFile, JSON.stringify({ ok: true }));
+  await FileSystem.makeDirectoryAsync(downloadDir, { intermediates: true });
+  await createDirAsync(remoteDirectory);
 
-  // Upload current DB file
   await uploadFileAsync({
-    destinationPath: 'SQL/app-backup.db',
-    filePath: FileSystem.documentDirectory + 'SQLite/app.db',
+    destinationPath: remoteRelativePath,
+    filePath: localFile,
   });
+
+  const files = await readDirAsync(remoteDirectory, { isFullPath: false });
+  const downloadedPath = await downloadFileAsync(remoteFullPath, downloadDir);
+
+  await unlinkAsync(remoteFullPath);
+
+  return { files, downloadedPath };
 }
-
-async function listBackups() {
-  const files = await readDirAsync('SQL');
-  console.log('All backups', files);
-}
-
-async function restoreLatest() {
-  const files = await readDirAsync('SQL', { isFullPath: false });
-  if (!files.length) return;
-
-  // take the first one (latest by your own sorting)
-  const latest = files[0];
-  const downloadPath = await downloadFileAsync(
-    `${defaultICloudContainerPath}/Documents/SQL/${latest}`,
-    FileSystem.documentDirectory + 'SQLite'
-  );
-  console.log('Restored to', downloadPath);
-}
-
-// Listen to progress when uploading multiple files
-const sub = addUploadFilesAsyncProgressListener(({ value }) => console.log('Progress', value));
-
-// Later → sub.remove();
 ```
 
-### Running the Example App
+Path rule: `createDirAsync`, `readDirAsync`, `isExistAsync`, `uploadFileAsync`, and `uploadFilesAsync` use paths relative to iCloud `Documents`. `downloadFileAsync`, `downloadFilesAsync`, and `unlinkAsync` use full iCloud file paths.
 
-A full example Expo application is included in the `example` directory. To run it:
+Read the full quick start: https://o-svetlichnyi.github.io/expo-icloud-storage/quick-start
 
-1. **Build the module first:**
-   ```bash
-   # From the root directory
-   npm run prepare
-   ```
+## API
 
-2. **Run the example:**
-   ```bash
-   cd example
-   npm install
-   npm run ios
-   ```
+| Export | Purpose |
+| --- | --- |
+| `defaultICloudContainerPath` | Absolute path to the app's iCloud container, or `null` when unavailable. |
+| `isICloudAvailableAsync()` | Checks whether iCloud is available for the current user/device. |
+| `createDirAsync(path)` | Creates a directory under iCloud `Documents`. |
+| `readDirAsync(path, options)` | Lists a directory under iCloud `Documents`. |
+| `isExistAsync(path, isDirectory)` | Checks whether a file or directory exists under iCloud `Documents`. |
+| `uploadFileAsync(options)` | Uploads one local file to iCloud `Documents`. |
+| `uploadFilesAsync(options)` | Uploads multiple local files to an iCloud directory. |
+| `downloadFileAsync(path, destinationDir)` | Downloads a full iCloud file path to a local directory. |
+| `downloadFilesAsync(paths, destinationDir)` | Downloads multiple full iCloud file paths. |
+| `unlinkAsync(path)` | Deletes a full iCloud path. |
+| `addUploadFilesAsyncProgressListener(listener)` | Listens for upload progress. |
+| `addDownloadFilesAsyncProgressListener(listener)` | Listens for download progress. |
+| `PathUtils` | Helpers for `.icloud` placeholder paths and extensions. |
 
-The example app demonstrates all the module's features with a simple UI.
+Full API reference: https://o-svetlichnyi.github.io/expo-icloud-storage/api
 
-![Expo iCloud Storage Example App Screenshot](./example/assets/screenshot-example.png)
+## Recipes
 
----
+- SQLite backup and restore: https://o-svetlichnyi.github.io/expo-icloud-storage/recipes/sqlite-backup
+- Realm backup and restore: https://o-svetlichnyi.github.io/expo-icloud-storage/recipes/realm-backup
 
-## 🔌 API Reference
+## Example App
 
-| Method | Signature | Description |
-| ------ | --------- | ----------- |
-| `defaultICloudContainerPath` | `string \| null` | Absolute path to the app's iCloud container. `null` if iCloud is disabled. |
-| `isICloudAvailableAsync()` | `Promise<boolean>` | Detect whether the user is signed in to iCloud and the capability is enabled. |
-| `isExistAsync(path, isDirectory)` | `Promise<boolean>` | Check if a file **or directory** exists inside the container. |
-| `createDirAsync(path)` | `Promise<boolean>` | Recursively create a folder inside iCloud Drive. |
-| `readDirAsync(path, { isFullPath? })` | `Promise<string[]>` | List directory contents. When `isFullPath` is `false` only file names are returned. |
-| `uploadFileAsync({ destinationPath, filePath })` | `Promise<string>` | Upload a single local file (`file://…`) to iCloud; resolves with the uploaded file path. |
-| `uploadFilesAsync({ destinationDirectory, filePaths })` | `Promise<ICloudFileOperationResult[]>` | Upload **multiple** files to the given directory. Progress events are emitted (see below). |
-| `downloadFileAsync(path, destinationDir)` | `Promise<string>` | Download a remote file; resolves with the **local** path once copied. |
-| `downloadFilesAsync(paths, destinationDir)` | `Promise<ICloudFileOperationResult[]>` | Download an array of iCloud file paths at once. Emits progress events and returns the result for every file. |
-| `unlinkAsync(path)` | `Promise<boolean>` | Permanently remove a file or folder from iCloud Drive. |
+A full Expo example app is included in `example/`.
 
-### Events
+```bash
+npm install
+npm run prepare
 
-```ts
-import {
-  addUploadFilesAsyncProgressListener,
-  addDownloadFilesAsyncProgressListener,
-} from '@oleg_svetlichnyi/expo-icloud-storage';
-
-// value is a Double between 0 – 100
-const sub = addUploadFilesAsyncProgressListener(({ value }) => {
-  console.log('Upload progress', value);
-});
-
-// Remember to unsubscribe
-sub.remove();
+cd example
+npm install
+npm run ios
 ```
 
-| Event listener | Emitted from | Payload |
-| -------------- | ------------ | ------- |
-| `addUploadFilesAsyncProgressListener` | `uploadFile(s)Async` | `{ value: number }` percentage |
-| `addDownloadFilesAsyncProgressListener` | `downloadFile(s)Async` | `{ value: number }` percentage |
+![Expo iCloud Storage example app](./example/assets/screenshot-example.png)
 
-### Path utilities
+## Development
 
-```ts
-import { PathUtils } from '@oleg_svetlichnyi/expo-icloud-storage';
-
-PathUtils.ext('file.jpg.icloud');          // 'icloud' (last segment)
-PathUtils.iCloudRemoveDotExt('photo.heic.icloud'); // 'photo.heic'
+```bash
+npm run build
+npm run lint
+npm run test
+npm run docs:build
 ```
 
----
+## License
 
-## 📄 License
-
-[MIT](LICENSE) © 2024 — based on Expo Modules SDK
+[MIT](LICENSE) © 2024-present Oleg Svetlichnyi
