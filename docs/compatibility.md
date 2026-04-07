@@ -10,6 +10,7 @@
 | Expo prebuild | Supported | The config plugin writes the iCloud configuration during prebuild. |
 | EAS iOS build | Supported | The app must use an iCloud-capable bundle identifier and provisioning profile. |
 | Bare React Native iOS app | Supported with Expo Modules | Install Expo Modules, install pods, and configure the iCloud capability. |
+| React Native New Architecture | Supported | The package is an Expo Module and the example app is configured with `newArchEnabled: true`. |
 | iOS simulator | Partially supported | Useful for launch/build checks. iCloud availability depends on the simulator being signed in to iCloud. |
 | Physical iOS device | Supported | Best environment for real iCloud Drive upload/download testing. |
 
