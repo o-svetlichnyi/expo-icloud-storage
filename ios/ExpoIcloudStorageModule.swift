@@ -1,6 +1,40 @@
 import ExpoModulesCore
 import Foundation
 
+internal class SafePromise {
+    private let promise: Promise
+    private var isSettled = false
+    private let lock = NSLock()
+
+    init(_ promise: Promise) {
+        self.promise = promise
+    }
+
+    func resolve(_ value: Any? = nil) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !isSettled else { return }
+        isSettled = true
+        promise.resolve(value)
+    }
+
+    func reject(_ error: Error) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !isSettled else { return }
+        isSettled = true
+        promise.reject(error)
+    }
+
+    func reject(_ code: String, _ description: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !isSettled else { return }
+        isSettled = true
+        promise.reject(code, description)
+    }
+}
+
 public class ExpoIcloudStorageModule: Module {
     private var iCloudContainerIdentifier: String? {
         guard let containers = Bundle.main.object(forInfoDictionaryKey: "NSUbiquitousContainers") as? [String: Any],
@@ -98,7 +132,8 @@ public class ExpoIcloudStorageModule: Module {
 
     private func downloadFile(path: String, destinationDir: String, progressCallback: @escaping (Double, Int64, String) -> Void, completionHandler: @escaping (Result<String, Error>) -> Void) {
         let fileURL = URL(fileURLWithPath: path)
-        let destinationDirURL = URL(fileURLWithPath: destinationDir)
+        let destinationDirWithoutPrefix = destinationDir.replacingOccurrences(of: "file://", with: "")
+        let destinationDirURL = URL(fileURLWithPath: destinationDirWithoutPrefix)
         let fileManager = FileManager.default
         let destinationURL = destinationDirURL.appendingPathComponent(fileManager.displayName(atPath: fileURL.path))
         
@@ -191,7 +226,7 @@ public class ExpoIcloudStorageModule: Module {
         }
     }
 
-    private func handleDownloadCompletion(_ result: Result<String, Error>, _ filesProcessed: inout Int, _ totalFiles: Int, _ results: inout [Result<String, Error>], _ promise: Promise) {
+    private func handleDownloadCompletion(_ result: Result<String, Error>, _ filesProcessed: inout Int, _ totalFiles: Int, _ results: inout [Result<String, Error>], _ promise: SafePromise) {
         results.append(result)
         filesProcessed += 1
         if filesProcessed == totalFiles {
@@ -252,22 +287,25 @@ public class ExpoIcloudStorageModule: Module {
         }
 
         AsyncFunction("isICloudAvailableAsync") { (promise: Promise) in
+            let safePromise = SafePromise(promise)
             let isICloudAvailable = FileManager.default.ubiquityIdentityToken != nil
-            promise.resolve(isICloudAvailable)
+            safePromise.resolve(isICloudAvailable)
         }
 
         AsyncFunction("isExistAsync") { (path: String, isDirectory: Bool, promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard let currentDocumentsURL = self.iCloudDocumentsURL else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             let fileURL = currentDocumentsURL.appendingPathComponent(path, isDirectory: isDirectory)
-            promise.resolve(FileManager.default.fileExists(atPath: fileURL.path))
+            safePromise.resolve(FileManager.default.fileExists(atPath: fileURL.path))
         }
 
         AsyncFunction("createDirAsync") { (path: String, promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard let currentDocumentsURL = self.iCloudDocumentsURL else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
 
@@ -275,25 +313,26 @@ public class ExpoIcloudStorageModule: Module {
 
             do {
                 try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-                promise.resolve(true)
+                safePromise.resolve(true)
             } catch let error as NSError {
                 print("Error creating directory: \(error.localizedDescription)")
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Failed to create directory: \(error.localizedDescription)"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Failed to create directory: \(error.localizedDescription)"]))
             }
         }
 
         AsyncFunction("unlinkAsync") { (path: String, promise: Promise) in
+            let safePromise = SafePromise(promise)
             let fileURL = URL(fileURLWithPath: path)
 
             guard let iCloudContainer = self.iCloudContainerURL,
                   fileURL.path.hasPrefix(iCloudContainer.path) else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid iCloud path"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid iCloud path"]))
                 return
             }
 
             let fileManager = FileManager.default
             guard fileManager.fileExists(atPath: fileURL.path) else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(fileURL.path)"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(fileURL.path)"]))
                 return
             }
 
@@ -308,44 +347,46 @@ public class ExpoIcloudStorageModule: Module {
             }
 
             if let error = removeError ?? coordinatorError {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1005, userInfo: [NSLocalizedDescriptionKey: "Failed to remove iCloud item at \(fileURL.path): \(error.localizedDescription)", NSUnderlyingErrorKey: error]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1005, userInfo: [NSLocalizedDescriptionKey: "Failed to remove iCloud item at \(fileURL.path): \(error.localizedDescription)", NSUnderlyingErrorKey: error]))
                 return
             }
 
-            promise.resolve(true)
+            safePromise.resolve(true)
         }
 
         AsyncFunction("readDirAsync") { (path: String, options: [String: Bool], promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard let currentDocumentsURL = self.iCloudDocumentsURL else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found"]))
                 return
             }
             let directoryURL = currentDocumentsURL.appendingPathComponent(path, isDirectory: true)
             guard let contents = try? FileManager.default.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil) else {
-                promise.resolve([])
+                safePromise.resolve([])
                 return
             }
 
             let isFullPath = options["isFullPath"] ?? true
             if isFullPath {
                 let fullPaths = contents.map { $0.path }
-                promise.resolve(fullPaths)
+                safePromise.resolve(fullPaths)
             } else {
                 let fileNames = contents.map { $0.lastPathComponent }
-                promise.resolve(fileNames)
+                safePromise.resolve(fileNames)
             }
         }
 
         AsyncFunction("downloadFileAsync") { (path: String, destinationDir: String, promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard self.iCloudDocumentsURL != nil else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             
             // Check if the file exists before attempting to download
             let fileManager = FileManager.default
             if !fileManager.fileExists(atPath: path) {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(path)"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "File does not exist in iCloud: \(path)"]))
                 self.sendEvent("onDownloadFilesAsyncProgress", ["value": 0])
                 return
             }
@@ -355,16 +396,17 @@ public class ExpoIcloudStorageModule: Module {
             }, completionHandler: { result in
                 switch result {
                 case let .success(destinationPath):
-                    promise.resolve(destinationPath)
+                    safePromise.resolve(destinationPath)
                 case let .failure(error):
-                    promise.reject(error)
+                    safePromise.reject(error)
                 }
             })
         }
 
         AsyncFunction("downloadFilesAsync") { (paths: [String], destinationDir: String, promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard self.iCloudDocumentsURL != nil else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             self.sendEvent("onDownloadFilesAsyncProgress", ["value": 0])
@@ -376,7 +418,7 @@ public class ExpoIcloudStorageModule: Module {
             if !nonExistentFiles.isEmpty {
                 if nonExistentFiles.count == paths.count {
                     // None of the files exist
-                    promise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "None of the specified files exist in iCloud"]))
+                    safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1004, userInfo: [NSLocalizedDescriptionKey: "None of the specified files exist in iCloud"]))
                     return
                 } else {
                     // Some files don't exist, just log a warning and continue with the files that do exist
@@ -389,7 +431,7 @@ public class ExpoIcloudStorageModule: Module {
             
             if existingPaths.isEmpty {
                 self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
-                promise.resolve([])
+                safePromise.resolve([])
                 return
             }
 
@@ -402,7 +444,7 @@ public class ExpoIcloudStorageModule: Module {
 
                     if totalFilesSize == 0 {
                                     self.sendEvent("onDownloadFilesAsyncProgress", ["value": 100])
-                                    promise.resolve([])
+                                    safePromise.resolve([])
                                     return
                                 }
 
@@ -412,20 +454,21 @@ public class ExpoIcloudStorageModule: Module {
                         }
 
                         let completionHandler: (Result<String, Error>) -> Void = { result in
-                            self.handleDownloadCompletion(result, &filesProcessed, existingPaths.count, &results, promise)
+                            self.handleDownloadCompletion(result, &filesProcessed, existingPaths.count, &results, safePromise)
                         }
 
                         self.downloadFile(path: path, destinationDir: destinationDir, progressCallback: progressCallback, completionHandler: completionHandler)
                     }
                 case let .failure(error):
-                    promise.reject(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch file sizes: \(error.localizedDescription)"]))
+                    safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch file sizes: \(error.localizedDescription)"]))
                 }
             })
         }
 
         AsyncFunction("uploadFileAsync") { (destinationPath: String, filePath: String, promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard self.iCloudDocumentsURL != nil else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             self.sendEvent("onUploadFilesAsyncProgress", ["value": 0])
@@ -435,23 +478,24 @@ public class ExpoIcloudStorageModule: Module {
                 switch result {
                 case let .success(destinationPath):
                     self.sendEvent("onUploadFilesAsyncProgress", ["value": 100])
-                    promise.resolve(destinationPath)
+                    safePromise.resolve(destinationPath)
                 case let .failure(error):
-                    promise.reject(error)
+                    safePromise.reject(error)
                 }
             })
         }
 
         AsyncFunction("uploadFilesAsync") { (destinationDirectory: String, filePaths: [String], promise: Promise) in
+            let safePromise = SafePromise(promise)
             guard let currentDocumentsURL = self.iCloudDocumentsURL else {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1001, userInfo: [NSLocalizedDescriptionKey: "iCloud documents directory not found or not accessible"]))
                 return
             }
             
             // Check if the destination directory exists
             let destDirURL = currentDocumentsURL.appendingPathComponent(destinationDirectory, isDirectory: true)
             if !FileManager.default.fileExists(atPath: destDirURL.path) {
-                promise.reject(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Destination directory does not exist. Please create it first using createDirAsync."]))
+                safePromise.reject(NSError(domain: "expo-icloud-storage", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Destination directory does not exist. Please create it first using createDirAsync."]))
                 return
             }
             
@@ -502,7 +546,7 @@ public class ExpoIcloudStorageModule: Module {
                         results.append(result)
 
                         if filesProcessed == totalFiles {
-                            promise.resolve(results.map { result -> [String: Any] in
+                            safePromise.resolve(results.map { result -> [String: Any] in
                                 switch result {
                                 case let .success(destinationPath):
                                     self.sendEvent("onUploadFilesAsyncProgress", ["value": 100])
